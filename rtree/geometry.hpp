@@ -50,5 +50,6 @@ private:
 
 double RectangleArea(BaseRectangle* rect);
 double AreaGain(BaseRectangle* space, BaseRectangle* newReact);
+BaseRectangle* RectangleAppend(BaseRectangle* rect1, BaseRectangle* rect2);
 
 #endif
