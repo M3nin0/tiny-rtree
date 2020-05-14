@@ -5,37 +5,48 @@
 
 int main()
 {
-    RNode level1a, level1b;
-    RNode level2a, level2b;
-    RNode level3a, level3b1, level3b2;
-
-    // Inserindo MBR level 3
-    level3a.addMBR(new BaseRectangle(1, 5, 2, 10));
-    level3b1.addMBR(new BaseRectangle(3, 7, 0, 9));
-    level3b2.addMBR(new BaseRectangle(1, 5, 6, 19));
+    // Calculando espansão de área
+    BaseRectangle* t1 = new BaseRectangle(0, 3, 0, 5);
+    BaseRectangle* t2 = new BaseRectangle(3, 5, 0, 5);
     
-    level3a.setLeaf(true);
-    level3b1.setLeaf(true);
-    level3b2.setLeaf(true);
+    // Área de cada retângulo
+    std::cout << RectangleArea(t1) << std::endl;
+    std::cout << RectangleArea(t2) << std::endl;
 
-    // Inserindo nós
-    level2a.insert(&level3a);
-    level2b.insert(&level3b1);
-    level2b.insert(&level3b2);
+    std::cout << AreaGain(t1, t2) << std::endl;
 
-    level1a.insert(&level2a);
-    level1b.insert(&level2b);
+    // Testando regras de calculo do MBR (Em níveis)
+    // RNode level1a, level1b;
+    // RNode level2a, level2b;
+    // RNode level3a, level3b1, level3b2;
 
-    // testando o mbr
-    BaseRectangle* mbrTotal;
+    // // Inserindo MBR level 3
+    // level3a.addMBR(new BaseRectangle(1, 5, 2, 10));
+    // level3b1.addMBR(new BaseRectangle(3, 7, 0, 9));
+    // level3b2.addMBR(new BaseRectangle(1, 5, 6, 19));
+    
+    // level3a.setLeaf(true);
+    // level3b1.setLeaf(true);
+    // level3b2.setLeaf(true);
 
-    // lado a
-    mbrTotal = level1a.mbr();
-    std::cout << "MBR(" << mbrTotal->xmin() << "," << mbrTotal->xmax() << "," << mbrTotal->ymin() << "," << mbrTotal->ymax() << ")" << std::endl;
+    // // Inserindo nós
+    // level2a.insert(&level3a);
+    // level2b.insert(&level3b1);
+    // level2b.insert(&level3b2);
 
-    // lado b
-    mbrTotal = level1b.mbr();
-    std::cout << "MBR(" << mbrTotal->xmin() << "," << mbrTotal->xmax() << "," << mbrTotal->ymin() << "," << mbrTotal->ymax() << ")" << std::endl;
+    // level1a.insert(&level2a);
+    // level1b.insert(&level2b);
+
+    // // testando o mbr
+    // BaseRectangle* mbrTotal;
+
+    // // lado a
+    // mbrTotal = level1a.mbr();
+    // std::cout << "MBR(" << mbrTotal->xmin() << "," << mbrTotal->xmax() << "," << mbrTotal->ymin() << "," << mbrTotal->ymax() << ")" << std::endl;
+
+    // // lado b
+    // mbrTotal = level1b.mbr();
+    // std::cout << "MBR(" << mbrTotal->xmin() << "," << mbrTotal->xmax() << "," << mbrTotal->ymin() << "," << mbrTotal->ymax() << ")" << std::endl;
 
     // RNode r;
     // RNode r2;

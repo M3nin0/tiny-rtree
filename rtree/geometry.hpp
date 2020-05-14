@@ -48,4 +48,7 @@ private:
     double p_xmin, p_xmax, p_ymin, p_ymax;
 };
 
+double RectangleArea(BaseRectangle* rect);
+double AreaGain(BaseRectangle* space, BaseRectangle* newReact);
+
 #endif
