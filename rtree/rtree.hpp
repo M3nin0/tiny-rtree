@@ -21,17 +21,27 @@ public:
 
     bool isFull() const;
     bool isLeaf() const;
-    std::vector<RNode*> children() const;
+    std::vector<RNode*> children() const; // Isto como 'children' está um pouco estranho
+                                          // vou alterar depois para ficar mais semântico
 private:
+    
     bool p_isleaf = false;
     std::size_t p_m, p_M;
     std::size_t p_size = 0;
     BaseRectangle *p_mbr = nullptr;
 
+    RNode* child = nullptr; // Talvez isso aqui possar ser utilizado como 
+                            // elemento para controlar se é ou não uma folha.
+                            // Provavelmente isto vai passar a ser um vetor que possuí
+                            // valores entre m e M e a variável p_chidren passar a ser algo
+                            // como 'blocks' ou 'data'. Verificar
     RNode* p_parent = nullptr;
     std::vector<RNode*> p_children;
 
     void UpdateMBR(BaseRectangle* nBaseRectangle);
+    
+    // Métodos auxiliares da inserção
+    void AdjustTree(RNode* root, RNode* N, RNode* NN);
 };
 
 class RTree
@@ -44,9 +54,8 @@ public:
     // que tenha disponível um método do tipo `envelope` ou similar
     void insert(BaseRectangle* rect);
 private:
-    std::size_t p_m, p_M;
-
     RNode* root;
+    std::size_t p_m, p_M;
 };
 
 #endif

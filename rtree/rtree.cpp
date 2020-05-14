@@ -89,6 +89,11 @@ void RNode::UpdateMBR(BaseRectangle* nBaseRectangle)
 
 bool RNode::isLeaf() const
 {
+    // Quando chega ao máximo
+    // entende-se que o nó deixa de ser uma folha, 
+    // pois vai ser dividido.
+    // Talvez o membro de dados p_isleaf pode ser utilizado
+    // para representar de forma mais natural o crescimento da árvore
     return p_size <= p_M;
 }
 
@@ -133,11 +138,21 @@ RNode* ChooseLeaf(RNode* root, BaseRectangle* newRect)
         }
     }
 
-    if (selectedNode == root)
-        return root;
-
     return ChooseLeaf(selectedNode, newRect);
 }
+
+void RNode::AdjustTree(RNode* root, RNode* N, RNode* NN)
+{
+    if (N == root)
+        return;
+
+    RNode* en = new RNode();
+    en->p_m = root->p_m;
+    en->p_M = root->p_M;
+    // en->p
+
+}
+
 
 void RTree::insert(BaseRectangle* rect)
 {
@@ -153,8 +168,5 @@ void RTree::insert(BaseRectangle* rect)
     else
         L->insert(newRNode);
     
-
     // AdjustTree deve vir aqui...
 }
-
-
