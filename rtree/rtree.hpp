@@ -14,6 +14,8 @@ public:
     RNode(std::size_t m, std::size_t M, RNode* parent, bool isLeaf);
 
     // Métodos temporários
+    RNode* parent() const;
+
     BaseRectangle* mbr(); // talvez esse não seja temporário
     void insert(RNode* nrnode);
     void setLeaf(bool isLeaf);
@@ -42,6 +44,11 @@ private:
     
     // Métodos auxiliares da inserção
     void AdjustTree(RNode* root, RNode* N, RNode* NN);
+    
+    // Posteriormente, estes algoritmos serão organizados e separados
+    // std::vector<RNode*> QuadraticSplit(RNode* root); // vector para devolver os dois elementos
+    // std::vector<RNode*> QuadraticPickSeeds(RNode* root);
+    // RNode* QuadraticPickNext(RNode* root, RNode* E);
 };
 
 class RTree

@@ -4,6 +4,7 @@
 #include "rtree.hpp"
 #include <algorithm>
 #include <iostream>
+#include <limits>
 
 /**
  * Definição da classe e operações de nó
@@ -25,6 +26,11 @@ RNode::RNode(std::size_t m, std::size_t M, RNode* parent)
 RNode::RNode(std::size_t m, std::size_t M, RNode* parent, bool isLeaf)
     : p_m(m), p_M(M), p_parent(parent), p_isleaf(isLeaf)
 {
+}
+
+RNode* RNode::parent() const
+{
+    return p_parent;
 }
 
 void RNode::setLeaf(bool isLeaf)
@@ -131,7 +137,7 @@ RNode* ChooseLeaf(RNode* root, BaseRectangle* newRect)
     {
         double areaGain = AreaGain(node->mbr(), newRect);
 
-        if (areaGain < maxGainArea )
+        if ( areaGain < maxGainArea )
         {
             selectedNode = node;
             maxGainArea = areaGain;
@@ -146,11 +152,63 @@ void RNode::AdjustTree(RNode* root, RNode* N, RNode* NN)
     if (N == root)
         return;
 
-    RNode* en = new RNode();
-    en->p_m = root->p_m;
-    en->p_M = root->p_M;
+    // Necessita do Split para testar
+    // RNode* en = new RNode();
+    // en->p_m = root->p_m;
+    // en->p_M = root->p_M;
     // en->p
 
+}
+
+std::vector<RNode*> QuadraticPickSeeds(RNode* root)
+{
+    double d = std::numeric_limits<double>::min();
+    RNode* wrongE1, *wrongE2;
+
+    for(auto e1: root->children())
+    {
+        for(auto e2: root->children())
+        {
+            if (e1 != e2)
+            {
+                // Calculando o pior par
+                BaseRectangle* j = RectangleAppend(e1->mbr(), e2->mbr());
+                double dFor = RectangleArea(j) - RectangleArea(e1->mbr()) - RectangleArea(e2->mbr());
+
+                if (dFor > d)
+                {
+                    d = dFor;
+                    wrongE1 = e1;
+                    wrongE2 = e2;
+                }
+            }
+        }
+    }
+    return std::vector<RNode*>({wrongE1, wrongE2});
+}
+
+RNode* QuadraticPickNext(RNode* root, RNode* E)
+{
+    
+}
+
+std::vector<RNode*> QuadraticSplit(RNode* root)
+{
+    RNode* groupOne = new RNode();
+    RNode* groupTwo = new RNode();
+
+    // Encontrando o pior par para ficarem separados    
+    std::vector<RNode*> wrongSeeds = QuadraticPickSeeds(root);
+
+    groupOne->insert(wrongSeeds.at(0));
+    groupTwo->insert(wrongSeeds.at(1));
+
+    for(auto entry: root->children())
+    {
+        
+    }
+
+    return wrongSeeds;
 }
 
 
@@ -163,8 +221,9 @@ void RTree::insert(BaseRectangle* rect)
     std::cout << L << std::endl;
 
     if (L->isFull())
+        std::vector<RNode*> nAndNN = QuadraticSplit(L);
         // SplitTree deve vir aqui...
-        std::cout << "Tratar, o nó está cheio" << std::endl;
+        // std::cout << "Tratar, o nó está cheio" << std::endl;
     else
         L->insert(newRNode);
     
