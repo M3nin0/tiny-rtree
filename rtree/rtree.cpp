@@ -165,13 +165,13 @@ std::vector<RNode*> QuadraticPickSeeds(RNode* root)
     double d = std::numeric_limits<double>::min();
     RNode* wrongE1, *wrongE2;
 
+    // Buscando o pior par
     for(auto e1: root->children())
     {
         for(auto e2: root->children())
         {
             if (e1 != e2)
             {
-                // Calculando o pior par
                 BaseRectangle* j = RectangleAppend(e1->mbr(), e2->mbr());
                 double dFor = RectangleArea(j) - RectangleArea(e1->mbr()) - RectangleArea(e2->mbr());
 
@@ -187,9 +187,32 @@ std::vector<RNode*> QuadraticPickSeeds(RNode* root)
     return std::vector<RNode*>({wrongE1, wrongE2});
 }
 
-RNode* QuadraticPickNext(RNode* root, RNode* E)
+RNode* QuadraticPickNext(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo)
 {
-    
+    std::size_t indexOfSelectedNode = -1; // Para auxiliar a remoção do elemento selecionado
+    RNode* nodeWithMaxDifference = nullptr;
+    double maxDifference = std::numeric_limits<double>::min();
+
+    for(std::size_t i = 0; i < children.size(); ++i)
+    {
+        RNode* entry = children.at(i);
+
+        // Calculando a diferença do ganho de área em cada grupo
+        // em seguida, determina se a diferença (Colocada como absoluta para evitar erros)
+        // é a máxima, caso seja, salva o nó
+        double gainGroupOne = AreaGain(groupOne->mbr(), entry->mbr());
+        double gainGroupTwo = AreaGain(groupTwo->mbr(), entry->mbr());
+        double difference = std::abs(gainGroupOne - gainGroupTwo);
+
+        if (difference > maxDifference)
+        {
+            indexOfSelectedNode = i;
+            maxDifference = difference;
+            nodeWithMaxDifference = entry;
+        }
+    }
+    children.erase(children.begin() + indexOfSelectedNode);
+    return nodeWithMaxDifference;
 }
 
 std::vector<RNode*> QuadraticSplit(RNode* root)
@@ -202,13 +225,18 @@ std::vector<RNode*> QuadraticSplit(RNode* root)
 
     groupOne->insert(wrongSeeds.at(0));
     groupTwo->insert(wrongSeeds.at(1));
+    std::vector<RNode*> children = root->children();
+ 
 
-    for(auto entry: root->children())
+    // Percorrendo todos os elementos para inserir os mesmos dentro de cada um dos grupos criados
+    while (!children.empty()) // Com isto, estou garantindo que todos os elementos serão percorridos.
     {
-        
+        RNode* nextEntry = QuadraticPickNext(children, groupOne, groupTwo);
+    
+        // ToDo: Determinar em qual grupo ele vai estar
     }
 
-    return wrongSeeds;
+    return wrongSeeds; // trocar este wrongSeeds
 }
 
 
