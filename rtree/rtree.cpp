@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <limits>
+#include <stdlib.h>
 
 /**
  * Definição da classe e operações de nó
@@ -147,10 +148,12 @@ RNode* ChooseLeaf(RNode* root, BaseRectangle* newRect)
     return ChooseLeaf(selectedNode, newRect);
 }
 
-void RNode::AdjustTree(RNode* root, RNode* N, RNode* NN)
+void AdjustTree(RNode* root, RNode* N, RNode* NN)
 {
     if (N == root)
         return;
+
+
 
     // Necessita do Split para testar
     // RNode* en = new RNode();
@@ -215,8 +218,29 @@ RNode* QuadraticPickNext(std::vector<RNode*>& children, RNode* groupOne, RNode* 
     return nodeWithMaxDifference;
 }
 
+
+// ToDo: Trocar esta função
+// Método feito APENAS PARA TESTE
+// O Código é MUITO RUIM E NÃO CONSOME A API DO C++ corretamente
+bool ElementIsInAVector(std::vector<RNode*>& vec, RNode* el)
+{
+    for(auto vEl: vec)
+    {
+        if (vEl == el)
+            return true;
+    }
+    return false;
+}
+
+/**
+ * Este método faz o split utilizando o QuadraticSplit. No estado atual do método
+ * ainda não é feito o 'balanceamento' para verificar a quantidade de elementos em cada um dos
+ * grupos e se os mesmos possuem o mínimo necessário para o funcionamento, tal operação será
+ * revisitada mais tarde.
+ */
 std::vector<RNode*> QuadraticSplit(RNode* root)
 {
+    // Cria os dois novos grupos
     RNode* groupOne = new RNode();
     RNode* groupTwo = new RNode();
 
@@ -227,18 +251,52 @@ std::vector<RNode*> QuadraticSplit(RNode* root)
     groupTwo->insert(wrongSeeds.at(1));
     std::vector<RNode*> children = root->children();
  
-
     // Percorrendo todos os elementos para inserir os mesmos dentro de cada um dos grupos criados
     while (!children.empty()) // Com isto, estou garantindo que todos os elementos serão percorridos.
     {
         RNode* nextEntry = QuadraticPickNext(children, groupOne, groupTwo);
     
-        // ToDo: Determinar em qual grupo ele vai estar
+        double areaGainG1 = AreaGain(groupOne->mbr(), nextEntry->mbr());
+        double areaGainG2 = AreaGain(groupTwo->mbr(), nextEntry->mbr());
+
+        // Seleciona o grupo que possuí o menor ganho de área
+        // para inserir o elemento E
+        RNode* selectedGroup;
+        if (areaGainG1 > areaGainG2)
+            selectedGroup = groupTwo;
+        else if (areaGainG2 > areaGainG1)
+            selectedGroup = groupOne;
+        else if (areaGainG1 == areaGainG2)
+        {
+            // Se o ganho de área for igual, é preciso de uma forma de desempate
+            // 1° - Quantidade de elementos no grupo
+            std::size_t g1Size = groupOne->children().size();
+            std::size_t g2Size = groupTwo->children().size();
+            if (g1Size != g2Size)
+            {
+                // Verifica os tamanhos de cada grupo
+                if (g1Size > g2Size)
+                    selectedGroup = groupTwo;
+                else if (g2Size > g1Size)
+                    selectedGroup = groupOne;
+            } else {
+                // 2° Adiciona em qualquer grupo (Random)
+                std::size_t groupIndex = rand() % 2 + 1;
+
+                if (groupIndex == 1)
+                    selectedGroup = groupOne;
+                else
+                    selectedGroup = groupTwo;
+            }
+        }
+        // Insere no grupo selecionado com base nos critérios definidos no artigo
+        std::vector<RNode*> vec = selectedGroup->children();
+        if (!ElementIsInAVector(vec, nextEntry))
+            selectedGroup->insert(nextEntry);
     }
 
-    return wrongSeeds; // trocar este wrongSeeds
+    return std::vector<RNode*> ({ groupOne, groupTwo });
 }
-
 
 void RTree::insert(BaseRectangle* rect)
 {
@@ -246,14 +304,22 @@ void RTree::insert(BaseRectangle* rect)
     newRNode->addMBR(rect);
 
     RNode* L = ChooseLeaf(root, rect);
+    RNode* LL = nullptr; // separando espaço para L e LL
     std::cout << L << std::endl;
 
     if (L->isFull())
+    {
+        // L->insert(newRNode);
+        //l->
+
         std::vector<RNode*> nAndNN = QuadraticSplit(L);
-        // SplitTree deve vir aqui...
-        // std::cout << "Tratar, o nó está cheio" << std::endl;
+        // Define L e LL como sendo os novos nós, gerados através do split
+        L = nAndNN.at(0);
+        LL = nAndNN.at(1);
+    }
     else
         L->insert(newRNode);
     
-    // AdjustTree deve vir aqui...
+    // AdjustTree deve vir aqui
+    AdjustTree(root, L, LL);
 }

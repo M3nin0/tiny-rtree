@@ -43,7 +43,7 @@ private:
     void UpdateMBR(BaseRectangle* nBaseRectangle);
     
     // Métodos auxiliares da inserção
-    void AdjustTree(RNode* root, RNode* N, RNode* NN);
+    // void AdjustTree(RNode* root, RNode* N, RNode* NN);
     
     // Posteriormente, estes algoritmos serão organizados e separados
     // std::vector<RNode*> QuadraticSplit(RNode* root); // vector para devolver os dois elementos
