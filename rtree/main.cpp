@@ -13,6 +13,9 @@ int main()
     rTree.insert(new BaseRectangle(14, 16, 51, 510));
     // Agora com o primeiro nó cheio
     rTree.insert(new BaseRectangle(12, 13, 15, 21));
+    rTree.insert(new BaseRectangle(1, 2, 2, 670));
+    rTree.insert(new BaseRectangle(122, 222, 678, 760));
+    rTree.insert(new BaseRectangle(122, 222, 678, 760));
 
     // Calculando espansão de área
     // BaseRectangle* t1 = new BaseRectangle(0, 3, 0, 5);

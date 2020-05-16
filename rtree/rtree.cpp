@@ -41,8 +41,16 @@ void RNode::setLeaf(bool isLeaf)
 
 void RNode::insert(RNode* nrnode)
 {
+    // Adaptando uma forma de zerar o contador quando os elementos a serem inseridos estão
+    // em um contexto de nó não folha
+    if (isLeaf())
+    {
+        if (p_size != 0)
+            p_size = 0;
+    }
+
     p_size += 1;
-    nrnode->p_parent = nrnode; // definindo o pai
+    nrnode->p_parent = this; // definindo o pai
     p_children.push_back(nrnode);
 
     if (p_mbr == nullptr)
@@ -94,26 +102,57 @@ void RNode::UpdateMBR(BaseRectangle* nBaseRectangle)
     p_mbr = RectangleAppend(p_mbr, nBaseRectangle);
 }
 
-bool RNode::isLeaf() const
+bool RNode::isLeaf()
 {
+    // ADAPTAÇÃO
+    if (!p_isleaf)
+        return p_isleaf;
+
     // Quando chega ao máximo
     // entende-se que o nó deixa de ser uma folha, 
     // pois vai ser dividido.
     // Talvez o membro de dados p_isleaf pode ser utilizado
     // para representar de forma mais natural o crescimento da árvore
-    return p_size <= p_M;
+    p_isleaf = (p_size <= p_M);
+    return p_isleaf;
 }
 
 // Buscar entender a forma do "isEmpty()"
-bool RNode::isFull() const
+bool RNode::isFull()
 {
     // Alterado para >= para testes
-    return p_children.size() >= p_M;
+    if (isLeaf())
+        return p_children.size() >= p_M;
+    return p_parentChildren.size() >= p_M;
 }
 
+// Retorna os membros do conjunto de dados
 std::vector<RNode*> RNode::children() const
 {
     return p_children;
+}
+
+void RNode::addParent(RNode* root)
+{
+   p_parent = root;
+}
+
+// Apaga os membros do conjunto de dados
+void RNode::clearDataChildren()
+{
+    p_children.clear(); // 
+}
+
+void RNode::addParentChildren(RNode* nnode)
+{
+    nnode->addParent(this);
+    p_parentChildren.push_back(nnode);
+}
+
+// Retorna os membros do conjunto de filhos
+std::vector<RNode*> RNode::parentChildren() const
+{
+    return p_parentChildren;
 }
 
 /**
@@ -145,33 +184,19 @@ RNode* ChooseLeaf(RNode* root, BaseRectangle* newRect)
         }
     }
 
+    // Realiza a operação até os nós folhas
     return ChooseLeaf(selectedNode, newRect);
 }
 
-void AdjustTree(RNode* root, RNode* N, RNode* NN)
-{
-    if (N == root)
-        return;
-
-
-
-    // Necessita do Split para testar
-    // RNode* en = new RNode();
-    // en->p_m = root->p_m;
-    // en->p_M = root->p_M;
-    // en->p
-
-}
-
-std::vector<RNode*> QuadraticPickSeeds(RNode* root)
+std::vector<RNode*> QuadraticPickSeeds(std::vector<RNode*>& vec) //(RNode* root)
 {
     double d = std::numeric_limits<double>::min();
     RNode* wrongE1, *wrongE2;
 
     // Buscando o pior par
-    for(auto e1: root->children())
+    for(auto e1: vec) //root->children())
     {
-        for(auto e2: root->children())
+        for(auto e2: vec) //root->children())
         {
             if (e1 != e2)
             {
@@ -238,18 +263,18 @@ bool ElementIsInAVector(std::vector<RNode*>& vec, RNode* el)
  * grupos e se os mesmos possuem o mínimo necessário para o funcionamento, tal operação será
  * revisitada mais tarde.
  */
-std::vector<RNode*> QuadraticSplit(RNode* root)
+std::vector<RNode*> QuadraticSplit(std::vector<RNode*>& children)// (RNode* root)
 {
     // Cria os dois novos grupos
     RNode* groupOne = new RNode();
     RNode* groupTwo = new RNode();
 
     // Encontrando o pior par para ficarem separados    
-    std::vector<RNode*> wrongSeeds = QuadraticPickSeeds(root);
+    std::vector<RNode*> wrongSeeds = QuadraticPickSeeds(children); //(root);
 
     groupOne->insert(wrongSeeds.at(0));
     groupTwo->insert(wrongSeeds.at(1));
-    std::vector<RNode*> children = root->children();
+    // std::vector<RNode*> children = root->children();
  
     // Percorrendo todos os elementos para inserir os mesmos dentro de cada um dos grupos criados
     while (!children.empty()) // Com isto, estou garantindo que todos os elementos serão percorridos.
@@ -298,6 +323,51 @@ std::vector<RNode*> QuadraticSplit(RNode* root)
     return std::vector<RNode*> ({ groupOne, groupTwo });
 }
 
+void AdjustTree(RNode* root, RNode* N, RNode* NN)
+{
+    if (N == root) // adicionar um método isRoot() ?
+        return;
+
+    RNode* L = N, *LL = nullptr;
+
+    // Ao que entendi esta operação é feita apenas para que, as entradas de MBR
+    // no nó pai sejam atualizadas, porém no caso desta implementação, tal atualização
+    // é feita durante a construção da árvore.
+
+    // Ajustando EN.I das entradas EN do nó pai
+    // BaseRectangle *br = nullptr;
+    // std::vector<RNode*> vec1 = N->children();
+    // for(std::size_t i = 0; i < vec1.size(); ++i)
+    // {
+    //     if (br == nullptr)
+    //     {
+    //         br = vec1.at(i)->mbr();
+    //     } else 
+    //     {
+    //         br = RectangleAppend(br, vec1.at(i)->mbr());
+    //     }
+    // }
+    // Esta parte precisa ser revisitada, aqui há um problema 
+    root->insert(N); // o MBR gerado é recursivo ? 
+    if (NN)
+        root->insert(NN);
+    if (root->isFull())
+    {
+        std::vector<RNode*> LElements = NN->children();
+        std::vector<RNode*> nAndNN = QuadraticSplit(LElements);
+    
+        L = nAndNN.at(0);
+        LL = nAndNN.at(1);
+
+        // Adicionando os novos elementos gerados como filhos da raiz atual
+        root->addParentChildren(L);
+        root->addParentChildren(LL);
+    }
+    if (LL)
+        AdjustTree(root, L->parent(), LL->parent());
+    AdjustTree(root, L->parent(), nullptr);
+}
+
 void RTree::insert(BaseRectangle* rect)
 {
     RNode* newRNode = new RNode(p_m, p_M);
@@ -310,15 +380,30 @@ void RTree::insert(BaseRectangle* rect)
     if (L->isFull())
     {
         // L->insert(newRNode);
-        //l->
+        // l->
+        // Junta todos os elementos em um vetor só e então 
+        // pede para que este seja dividido
+        std::vector<RNode*> LElements = L->children();
+        LElements.push_back(newRNode);
 
-        std::vector<RNode*> nAndNN = QuadraticSplit(L);
+        std::vector<RNode*> nAndNN = QuadraticSplit(LElements);
+
         // Define L e LL como sendo os novos nós, gerados através do split
         L = nAndNN.at(0);
         LL = nAndNN.at(1);
+
+        // Transformando o nó atual (Que antes era folha) em um nó intermediário
+        // Isso aqui é comportamento de quem ? Do nó, ele não deve ficar exposto desta forma!!! Pensar sobre
+        root->clearDataChildren();
+        root->addParentChildren(L);
+        root->addParentChildren(LL);
     }
     else
+    {
+        // Define que a raiz atual será o nó pai 
+        newRNode->addParent(root);
         L->insert(newRNode);
+    }
     
     // AdjustTree deve vir aqui
     AdjustTree(root, L, LL);

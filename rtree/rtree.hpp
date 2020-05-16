@@ -21,18 +21,27 @@ public:
     void setLeaf(bool isLeaf);
     void addMBR(BaseRectangle* mbr);
 
-    bool isFull() const;
-    bool isLeaf() const;
+    bool isFull();
+    bool isLeaf();
     std::vector<RNode*> children() const; // Isto como 'children' está um pouco estranho
                                           // vou alterar depois para ficar mais semântico
+
+    void clearDataChildren(); // utilizado para remover os elementos do membro de dados
+                              // que representa os blocos de dados (Quando é nó folha)
+    void addParentChildren(RNode* nnode); // Representa um novo filho (Quando este é um nó intermediário)
+                                          // que está sendo adicionado (Normalmente após um split)
+
+    void addParent(RNode* root); 
+
+    std::vector<RNode*> parentChildren() const;
 private:
-    
-    bool p_isleaf = false;
+    bool p_isleaf = true; // começa sendo folha
     std::size_t p_m, p_M;
     std::size_t p_size = 0;
     BaseRectangle *p_mbr = nullptr;
 
-    RNode* child = nullptr; // Talvez isso aqui possar ser utilizado como 
+    std::vector<RNode*> p_parentChildren;
+    // RNode* child = nullptr; // Talvez isso aqui possar ser utilizado como 
                             // elemento para controlar se é ou não uma folha.
                             // Provavelmente isto vai passar a ser um vetor que possuí
                             // valores entre m e M e a variável p_chidren passar a ser algo
