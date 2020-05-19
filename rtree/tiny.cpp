@@ -45,6 +45,8 @@ void RNode::addChildren(RNode* child)
 {
     child->p_parent = this; // Criando a associação entre os nós
     p_children.push_back(child);
+
+    updateMBR_(); // mantém o MBR do nó atualizado
 }
 
 BaseRectangle* RNode::mbr() const
@@ -193,8 +195,10 @@ bool elementsIsInVector(std::vector<RNode*>& vec, RNode* el)
 std::vector<RNode*> RNode::quadraticSplit_(std::vector<RNode*>& children)
 {
     // Cria os dois novos grupos (Nós folha)
-    RNode* groupOne = new RNode(true);
-    RNode* groupTwo = new RNode(true);
+    RNode* groupOne = new RNode(p_m, p_M);
+    RNode* groupTwo = new RNode(p_m, p_M);
+    groupOne->setIsLeaf(true);
+    groupTwo->setIsLeaf(true); // ToDo: Adicionar no construtor
 
     // Encontrando o pior par para separar eles    
     std::vector<RNode*> wrongSeeds = quadraticPickSeeds_(children);
@@ -202,6 +206,7 @@ std::vector<RNode*> RNode::quadraticSplit_(std::vector<RNode*>& children)
     groupOne->addChildren(wrongSeeds.at(0));
     groupTwo->addChildren(wrongSeeds.at(1));
 
+    bool isFinish = false;
     while (!children.empty())
     {
         // QS2 (Verificando se acabou)
@@ -212,15 +217,18 @@ std::vector<RNode*> RNode::quadraticSplit_(std::vector<RNode*>& children)
             // "A quantidade de nós atuais no grupo consegue alcançar o mínimo quando somada
             // a quantidade de elementos que estão disponíveis para utilização"
             std::size_t elSize = (group->p_children.size() + children.size());
-            if (elSize <= group->p_m)
+            if (elSize <= p_m)
             {
-                for(std::size_t inode = 1; group->p_m <= elSize; inode++)
+                for(std::size_t inode = 0; group->p_children.size() < p_m; ++inode)
                 {
                     group->addChildren(children.at(inode));
                     children.erase(children.begin() + inode);
                 }
+                isFinish = true;
             }
         }
+        if (isFinish)
+            return std::vector<RNode*> ({ groupOne, groupTwo });
 
         // QS3 (Seleciona entrada para atribuir)
         RNode* nextEntry = quadraticPickNext_(children, groupOne, groupTwo);
@@ -275,12 +283,11 @@ void RNode::insert_(RNode* nn)
     {
         L->addChildren(nn);
         std::vector<RNode*> LandLL = quadraticSplit_(L->p_children);
-
     } else
     {
         L->addChildren(nn);
     }
-    updateMBR_();
+    // updateMBR_();
 }
 
 /**

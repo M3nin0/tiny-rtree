@@ -40,10 +40,10 @@ private:
     void insert_(RNode* nn);
 
     // Métodos de controle da estrutura do nó
-    static RNode* chooseLeaf_(RNode* root, BaseRectangle* newRect);
-    static std::vector<RNode*> quadraticPickSeeds_(std::vector<RNode*>& vec);
-    static RNode* quadraticPickNext_(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo);
-    static std::vector<RNode*> quadraticSplit_(std::vector<RNode*>& children);
+    RNode* chooseLeaf_(RNode* root, BaseRectangle* newRect);
+    std::vector<RNode*> quadraticPickSeeds_(std::vector<RNode*>& vec);
+    RNode* quadraticPickNext_(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo);
+    std::vector<RNode*> quadraticSplit_(std::vector<RNode*>& children);
     
     // Métodos de controle geométrico do nó
     void updateMBR_();
