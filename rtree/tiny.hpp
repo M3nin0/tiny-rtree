@@ -14,6 +14,7 @@ public:
     RNode(std::size_t m, std::size_t M, RNode* parent);
     RNode(std::size_t m, std::size_t M, RNode* parent, bool isLeaf);
 
+    void addParent(RNode* child);
     void addChildren(RNode* child);
     void addDataBlock(RNode* dataBlock); // Adiciona dados ao nó indicado
 
@@ -41,6 +42,7 @@ private:
 
     // Métodos de controle da estrutura do nó
     RNode* chooseLeaf_(RNode* root, BaseRectangle* newRect);
+    void adjustTree_(RNode* root, RNode* N, RNode* NN);
     std::vector<RNode*> quadraticPickSeeds_(std::vector<RNode*>& vec);
     RNode* quadraticPickNext_(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo);
     std::vector<RNode*> quadraticSplit_(std::vector<RNode*>& children);

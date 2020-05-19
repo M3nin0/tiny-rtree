@@ -199,6 +199,7 @@ std::vector<RNode*> RNode::quadraticSplit_(std::vector<RNode*>& children)
     RNode* groupTwo = new RNode(p_m, p_M);
     groupOne->setIsLeaf(true);
     groupTwo->setIsLeaf(true); // ToDo: Adicionar no construtor
+    // groupOne
 
     // Encontrando o pior par para separar eles    
     std::vector<RNode*> wrongSeeds = quadraticPickSeeds_(children);
@@ -272,6 +273,15 @@ std::vector<RNode*> RNode::quadraticSplit_(std::vector<RNode*>& children)
     }
 
     return std::vector<RNode*> ({ groupOne, groupTwo });
+}
+
+void RNode::adjustTree_(RNode* root, RNode* N, RNode* NN)
+{
+    if(N == root)
+        return;
+
+
+
 }
 
 void RNode::insert_(RNode* nn)
