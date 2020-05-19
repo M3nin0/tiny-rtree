@@ -9,22 +9,28 @@ class RNode
 {
 public:
     RNode();
+    RNode(bool isLeaf);
     RNode(std::size_t m, std::size_t M); // estudar a necessidade do nó receber m e M
     RNode(std::size_t m, std::size_t M, RNode* parent);
     RNode(std::size_t m, std::size_t M, RNode* parent, bool isLeaf);
+
+    void addChildren(RNode* child);
 
     // Temporário
     void addMBR(BaseRectangle* mbr); // Vai para o construtor depois
     BaseRectangle* mbr() const;
 
     bool isLeaf() const;
+    bool setIsLeaf(bool isLeaf);
+    bool isFullOfChildren() const;
 
     friend class RTree;
 private:
-    std::size_t p_m, p_M;
+    bool p_isLeaf = false;
+    std::size_t p_m, p_M; // passar para constante
     RNode* p_parent = nullptr;
 
-    std::vector<BaseRectangle*> p_dataBlock;
+    std::vector<RNode*> p_dataBlock;
     std::vector<RNode*> p_children;
 
     BaseRectangle* p_mbr = nullptr;
@@ -39,7 +45,7 @@ private:
     static std::vector<RNode*> quadraticSplit_(std::vector<RNode*>& children);
     
     // Métodos de controle geométrico do nó
-    void updateMBR_(BaseRectangle* nBaseRectangle);
+    void updateMBR_();
 };
 
 class RTree
