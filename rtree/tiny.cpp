@@ -79,7 +79,7 @@ BaseRectangle* RNode::mbr() const
 void RNode::updateMBR_()
 {
     BaseRectangle* b = p_children.at(0)->mbr();
-    for(std::size_t i = 1; i <= p_children.size(); ++i)
+    for(std::size_t i = 0; i < p_children.size(); ++i)
     {
         b = RectangleAppend(b, p_children.at(i)->mbr());
     }
@@ -290,6 +290,7 @@ RTree::RTree(std::size_t m, std::size_t M)
     : p_m(m), p_M(M)
 {
     root = new RNode(m, M, nullptr);
+    root->setIsLeaf(true);
 }
 
 void RTree::insert(BaseRectangle* rect)
