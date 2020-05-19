@@ -31,14 +31,14 @@ bool RNode::isLeaf() const
     return p_isLeaf;
 }
 
-bool RNode::setIsLeaf(bool isLeaf)
+void RNode::setIsLeaf(bool isLeaf)
 {
     p_isLeaf = isLeaf;
 }
 
 bool RNode::isFullOfChildren() const
 {
-    return p_children.size() == p_M;
+    return p_children.size() >= p_M;
 }
 
 void RNode::addChildren(RNode* child)
@@ -154,10 +154,33 @@ std::vector<RNode*> RNode::quadraticPickSeeds_(std::vector<RNode*>& vec)
 
 RNode* RNode::quadraticPickNext_(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo)
 {
+    std::size_t indexOfSelectedNode = -1; // Para auxiliar a remoção do elemento selecionado
+    RNode* nodeWithMaxDifference = nullptr;
+    double maxDifference = std::numeric_limits<double>::min();
 
+    for(std::size_t i = 0; i < children.size(); ++i)
+    {
+        RNode* entry = children.at(i);
+
+        // Calculando a diferença do ganho de área em cada grupo
+        // em seguida, determina se a diferença (Colocada como absoluta para evitar erros)
+        // é a máxima, caso seja, salva o nó
+        double gainGroupOne = AreaGain(groupOne->mbr(), entry->mbr());
+        double gainGroupTwo = AreaGain(groupTwo->mbr(), entry->mbr());
+        double difference = std::abs(gainGroupOne - gainGroupTwo);
+
+        if (difference > maxDifference)
+        {
+            indexOfSelectedNode = i; // apenas para remover o elemento selecionado 
+            maxDifference = difference;
+            nodeWithMaxDifference = entry;
+        }
+    }
+    children.erase(children.begin() + indexOfSelectedNode);
+    return nodeWithMaxDifference;
 }
 
-bool ElementIsInAVector(std::vector<RNode*>& vec, RNode* el)
+bool elementsIsInVector(std::vector<RNode*>& vec, RNode* el)
 {
     for(auto vEl: vec)
     {
@@ -169,9 +192,9 @@ bool ElementIsInAVector(std::vector<RNode*>& vec, RNode* el)
 
 std::vector<RNode*> RNode::quadraticSplit_(std::vector<RNode*>& children)
 {
-    // Cria os dois novos grupos
-    RNode* groupOne = new RNode();
-    RNode* groupTwo = new RNode();
+    // Cria os dois novos grupos (Nós folha)
+    RNode* groupOne = new RNode(true);
+    RNode* groupTwo = new RNode(true);
 
     // Encontrando o pior par para separar eles    
     std::vector<RNode*> wrongSeeds = quadraticPickSeeds_(children);
@@ -199,6 +222,7 @@ std::vector<RNode*> RNode::quadraticSplit_(std::vector<RNode*>& children)
             }
         }
 
+        // QS3 (Seleciona entrada para atribuir)
         RNode* nextEntry = quadraticPickNext_(children, groupOne, groupTwo);
     
         double areaGainG1 = AreaGain(groupOne->mbr(), nextEntry->mbr());
@@ -235,7 +259,7 @@ std::vector<RNode*> RNode::quadraticSplit_(std::vector<RNode*>& children)
             }
         }
         // Insere no grupo selecionado com base nos critérios definidos no artigo
-        if (!ElementIsInAVector(selectedGroup->p_children, nextEntry))
+        if (!elementsIsInVector(selectedGroup->p_children, nextEntry))
             selectedGroup->addChildren(nextEntry);
     }
 

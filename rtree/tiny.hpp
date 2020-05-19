@@ -15,13 +15,14 @@ public:
     RNode(std::size_t m, std::size_t M, RNode* parent, bool isLeaf);
 
     void addChildren(RNode* child);
+    void addDataBlock(RNode* dataBlock); // Adiciona dados ao nó indicado
 
     // Temporário
     void addMBR(BaseRectangle* mbr); // Vai para o construtor depois
     BaseRectangle* mbr() const;
 
     bool isLeaf() const;
-    bool setIsLeaf(bool isLeaf);
+    void setIsLeaf(bool isLeaf);
     bool isFullOfChildren() const;
 
     friend class RTree;
@@ -51,6 +52,7 @@ private:
 class RTree
 {
 public:
+    // ToDo: Validar se a entrada de 'm' faz sentido com a entrada de M
     RTree(std::size_t m, std::size_t M);
 
     void insert(BaseRectangle* rect);
