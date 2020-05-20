@@ -21,6 +21,11 @@ RNode::RNode(std::size_t m, std::size_t M, RNode* parent)
 {
 }
 
+RNode::RNode(std::size_t m, std::size_t M, RNode* parent, bool isLeaf)
+    : p_m(m), p_M(M), p_parent(parent), p_isLeaf(isLeaf) 
+{
+}
+
 void RNode::addMBR(BaseRectangle* mbr)
 {
     p_mbr = mbr;
@@ -96,6 +101,14 @@ RNode* RNode::chooseLeaf_(RNode* N, BaseRectangle* newRect)
 
     RNode* selectedNode = N;
     double maxGainArea = AreaGain(N->mbr(), newRect);
+
+    // isso aqui ocorreu em um dos testes que fiz
+    // a inserção em um N fazia o MBR ser zero (O MBR de N era muito grande,
+    // e o newRect pequeno, ai não mudava em nada o MBR)
+    if (maxGainArea == 0)
+    {
+        return N;
+    }
 
     // Buscando o nó que possuí o menor crescimento do MBR
     for(auto node: N->p_children)
@@ -192,14 +205,15 @@ bool elementsIsInVector(std::vector<RNode*>& vec, RNode* el)
     return false;
 }
 
-std::vector<RNode*> RNode::quadraticSplit_(std::vector<RNode*>& children)
+std::vector<RNode*> RNode::quadraticSplit_(RNode* L)
 {
+    std::vector<RNode*> children = L->p_children;
+    L->p_children.clear(); // pode limpar já que ele está sendo dividido
+                           // e seu conteúdo será redistribuído na função abaixo
+
     // Cria os dois novos grupos (Nós folha)
-    RNode* groupOne = new RNode(p_m, p_M);
+    RNode* groupOne = L; // aponta para L, mantendo todas as suas características
     RNode* groupTwo = new RNode(p_m, p_M);
-    groupOne->setIsLeaf(true);
-    groupTwo->setIsLeaf(true); // ToDo: Adicionar no construtor
-    // groupOne
 
     // Encontrando o pior par para separar eles    
     std::vector<RNode*> wrongSeeds = quadraticPickSeeds_(children);
@@ -280,11 +294,26 @@ void RNode::adjustTree_(RNode* root, RNode* N, RNode* NN)
     if(N == root)
         return;
 
+    RNode* pParent = N->p_parent;
+    pParent->updateMBR_();
 
-
+    if (NN != nullptr)
+    {
+        // Se o pai não estiver cheio de filhos, adiciona o NN
+        if (!pParent->isFullOfChildren())
+        {
+            pParent->addChildren(NN);
+            adjustTree_(root, pParent, nullptr); // Não tem divisão, NN = nullprt
+        }
+        else
+        {
+            std::vector<RNode*> PAndPP = quadraticSplit_(pParent);
+            adjustTree_(root, PAndPP.at(0), PAndPP.at(1));
+        }
+    }
 }
 
-void RNode::insert_(RNode* nn)
+RNode* RNode::insert_(RNode* nn)
 {
     RNode* L = chooseLeaf_(this, nn->mbr());
 
@@ -292,12 +321,31 @@ void RNode::insert_(RNode* nn)
     if (L->isFullOfChildren())
     {
         L->addChildren(nn);
-        std::vector<RNode*> LandLL = quadraticSplit_(L->p_children);
+
+        std::vector<RNode*> LAndLL = quadraticSplit_(L);
+        adjustTree_(this, LAndLL.at(0), LAndLL.at(1));
+        // Dúvida: Aqui defini que um nó folha é aquele que possuí filhos
+        // pq a dúvida ? A dúvida aqui veio por estarmos utilizando o mesmo
+        // container para armazenar nós e folhas...quando penso sobre
+        // as vezes parece não fazer diferença, mas fiquei com a dúvida..
+        LAndLL.at(0)->setIsLeaf(LAndLL.at(0)->p_children.empty());
+        LAndLL.at(1)->setIsLeaf(LAndLL.at(1)->p_children.empty());
+
+        // Verificando se L é a raiz
+        // Caso seja, uma divisão na raiz ocorreu
+        if (L == this)
+        {
+            RNode* newRoot = new RNode(p_m, p_M, nullptr, false); // criando novo nó
+            newRoot->addChildren(LAndLL.at(0));
+            newRoot->addChildren(LAndLL.at(1));
+
+            return newRoot;
+        }
     } else
     {
         L->addChildren(nn);
     }
-    // updateMBR_();
+    return this;
 }
 
 /**
@@ -312,9 +360,8 @@ RTree::RTree(std::size_t m, std::size_t M)
 
 void RTree::insert(BaseRectangle* rect)
 {
-    RNode* nn = new RNode(p_m, p_M, nullptr);
+    RNode* nn = new RNode(p_m, p_M, nullptr, true);
     nn->addMBR(rect);
-    nn->setIsLeaf(true); // mover para o construtor
 
-    root->insert_(nn);
+    root = root->insert_(nn);
 }

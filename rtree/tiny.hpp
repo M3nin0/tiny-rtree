@@ -16,7 +16,6 @@ public:
 
     void addParent(RNode* child);
     void addChildren(RNode* child);
-    void addDataBlock(RNode* dataBlock); // Adiciona dados ao nó indicado
 
     // Temporário
     void addMBR(BaseRectangle* mbr); // Vai para o construtor depois
@@ -28,24 +27,23 @@ public:
 
     friend class RTree;
 private:
-    bool p_isLeaf = false;
+    bool p_isLeaf = true; // gera um warning
     std::size_t p_m, p_M; // passar para constante
-    RNode* p_parent = nullptr;
+    RNode* p_parent = nullptr; // gera um warning
 
-    std::vector<RNode*> p_dataBlock;
     std::vector<RNode*> p_children;
-
     BaseRectangle* p_mbr = nullptr;
 
     // Métodos de operação no nó
-    void insert_(RNode* nn);
+    RNode* insert_(RNode* nn);
 
     // Métodos de controle da estrutura do nó
     RNode* chooseLeaf_(RNode* root, BaseRectangle* newRect);
     void adjustTree_(RNode* root, RNode* N, RNode* NN);
     std::vector<RNode*> quadraticPickSeeds_(std::vector<RNode*>& vec);
     RNode* quadraticPickNext_(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo);
-    std::vector<RNode*> quadraticSplit_(std::vector<RNode*>& children);
+    // std::vector<RNode*> quadraticSplit_(std::vector<RNode*>& children); esse estava com a lógica errada
+    std::vector<RNode*> quadraticSplit_(RNode* L);
     
     // Métodos de controle geométrico do nó
     void updateMBR_();
