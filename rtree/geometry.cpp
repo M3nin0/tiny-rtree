@@ -2,7 +2,7 @@
 #include <algorithm>
 #include "geometry.hpp"
 
-BaseRectangle::BaseRectangle(double xmin, double xmax, double ymin, double ymax)
+BaseRectangle::BaseRectangle(double xmin, double xmax, double ymin, double ymax) // limites do retângulo
     : p_xmin(xmin), p_xmax(xmax), p_ymin(ymin), p_ymax(ymax)
 {
 }
@@ -60,4 +60,13 @@ double AreaGain(BaseRectangle* space, BaseRectangle* newReact)
     double gainSpaceArea = RectangleArea(newSpace);
 
     return gainSpaceArea - actualSpaceArea;
+}
+
+// função que testa se os retângulos se sobrepõem
+int Overslaps(BaseRectangle *r, BaseRectangle *sr) // r=rectangle, sr=search_rectangle
+{
+    if((sr->xmin() > r->xmin() && sr->xmin() < r->xmax()) || (sr->xmax() > r->xmin() && sr->xmax() < r->xmax()) || (sr->ymin() > r->ymin() && sr->ymin() < r->ymax()) || (sr->ymax() > r->ymin() && sr->ymax() < r->ymax()))
+        return 0;
+    else
+        return 1;
 }
