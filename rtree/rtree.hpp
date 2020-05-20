@@ -1,5 +1,5 @@
-#ifndef __RTREE_HEADER__
-#define __RTREE_HEADER__
+#ifndef __RTREE_TINY__
+#define __RTREE_TINY__
 
 #include <vector>
 #include <cstddef>
@@ -9,69 +9,62 @@ class RNode
 {
 public:
     RNode();
-    RNode(std::size_t m, std::size_t M);
+    RNode(bool isLeaf);
+    RNode(std::size_t m, std::size_t M); // estudar a necessidade do nó receber m e M
     RNode(std::size_t m, std::size_t M, RNode* parent);
     RNode(std::size_t m, std::size_t M, RNode* parent, bool isLeaf);
 
-    // Métodos temporários
-    RNode* parent() const;
+    void addParent(RNode* child);
+    void addChildren(RNode* child);
 
-    BaseRectangle* mbr(); // talvez esse não seja temporário
-    void insert(RNode* nrnode);
-    void setLeaf(bool isLeaf);
-    void addMBR(BaseRectangle* mbr);
+    // Temporário
+    void addMBR(BaseRectangle* mbr); // Vai para o construtor depois
+    BaseRectangle* mbr() const;
 
-    bool isFull();
-    bool isLeaf();
-    std::vector<RNode*> children() const; // Isto como 'children' está um pouco estranho
-                                          // vou alterar depois para ficar mais semântico
+    bool isLeaf() const;
+    void setIsLeaf(bool isLeaf);
+    bool isFullOfChildren() const;
 
-    void clearDataChildren(); // utilizado para remover os elementos do membro de dados
-                              // que representa os blocos de dados (Quando é nó folha)
-    void addParentChildren(RNode* nnode); // Representa um novo filho (Quando este é um nó intermediário)
-                                          // que está sendo adicionado (Normalmente após um split)
-
-    void addParent(RNode* root); 
-
-    std::vector<RNode*> parentChildren() const;
+    friend class RTree;
 private:
-    bool p_isleaf = true; // começa sendo folha
-    std::size_t p_m, p_M;
-    std::size_t p_size = 0;
-    BaseRectangle *p_mbr = nullptr;
+    bool p_isLeaf = true; // gera um warning
+    std::size_t p_m, p_M; // passar para constante
+    RNode* p_parent = nullptr; // gera um warning
 
-    std::vector<RNode*> p_parentChildren;
-    // RNode* child = nullptr; // Talvez isso aqui possar ser utilizado como 
-                            // elemento para controlar se é ou não uma folha.
-                            // Provavelmente isto vai passar a ser um vetor que possuí
-                            // valores entre m e M e a variável p_chidren passar a ser algo
-                            // como 'blocks' ou 'data'. Verificar
-    RNode* p_parent = nullptr;
     std::vector<RNode*> p_children;
+    BaseRectangle* p_mbr = nullptr;
 
-    void UpdateMBR(BaseRectangle* nBaseRectangle);
+    // Métodos de operação no nó
+    RNode* insert_(RNode* nn);
+
+    // Métodos de controle da estrutura do nó
+    RNode* chooseLeaf_(RNode* root, BaseRectangle* newRect);
+    void adjustTree_(RNode* root, RNode* N, RNode* NN);
+    std::vector<RNode*> quadraticPickSeeds_(std::vector<RNode*>& vec);
+    RNode* quadraticPickNext_(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo);
+    // std::vector<RNode*> quadraticSplit_(std::vector<RNode*>& children); esse estava com a lógica errada
+    std::vector<RNode*> quadraticSplit_(RNode* L);
+
+    // Método de busca
+    std::vector<RNode*> search_(std::vector<RNode*>& vec, BaseRectangle* rect);
+    std::vector<RNode* overslaps_>; // provisório
     
-    // Métodos auxiliares da inserção
-    // void AdjustTree(RNode* root, RNode* N, RNode* NN);
-    
-    // Posteriormente, estes algoritmos serão organizados e separados
-    // std::vector<RNode*> QuadraticSplit(RNode* root); // vector para devolver os dois elementos
-    // std::vector<RNode*> QuadraticPickSeeds(RNode* root);
-    // RNode* QuadraticPickNext(RNode* root, RNode* E);
+    // Métodos de controle geométrico do nó
+    void updateMBR_();
 };
 
 class RTree
 {
 public:
+    // ToDo: Validar se a entrada de 'm' faz sentido com a entrada de M
     RTree(std::size_t m, std::size_t M);
 
-    // Esta parte, posteriormente, será substituída por uma
-    // classe mais genérica, possibilitando a inserção de qualquer geometria
-    // que tenha disponível um método do tipo `envelope` ou similar
     void insert(BaseRectangle* rect);
+    void search(BaseRectangle* rect);
 private:
     RNode* root;
     std::size_t p_m, p_M;
 };
+
 
 #endif
