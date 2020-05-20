@@ -51,5 +51,6 @@ private:
 double RectangleArea(BaseRectangle* rect);
 double AreaGain(BaseRectangle* space, BaseRectangle* newReact);
 BaseRectangle* RectangleAppend(BaseRectangle* rect1, BaseRectangle* rect2);
+int Overslaps(BaseRectangle* r, BaseRectangle* sr); // função que retorna 0 se os retângulos se sobrepõem, e 1 caso contrário
 
 #endif
