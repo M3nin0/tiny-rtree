@@ -1,69 +1,61 @@
-#include <cstddef>
-
-#include "geometry.hpp"
 #include "rtree.hpp"
+#include <cstddef>
 #include <algorithm>
 #include <iostream>
-#include <limits>
-#include <stdlib.h>
 
-/**
- * Definição da classe e operações de nó
- */
-RNode::RNode()
+RNode::RNode() // construtor vazio
 {
 }
 
-RNode::RNode(std::size_t m, std::size_t M)
+RNode::RNode(bool isLeaf)
+    : p_isLeaf(isLeaf)
+{
+}
+
+RNode::RNode(std::size_t m, std::size_t M) // construtor que recebe os números mínimo e máximo de entradas
     : p_m(m), p_M(M)
 {
 }
 
-RNode::RNode(std::size_t m, std::size_t M, RNode* parent)
+RNode::RNode(std::size_t m, std::size_t M, RNode* parent) // recebe também o nó pai
     : p_m(m), p_M(M), p_parent(parent)
 {
 }
 
-RNode::RNode(std::size_t m, std::size_t M, RNode* parent, bool isLeaf)
-    : p_m(m), p_M(M), p_parent(parent), p_isleaf(isLeaf)
+RNode::RNode(std::size_t m, std::size_t M, RNode* parent, bool isLeaf) // recebe a flag que diz se é folha ou não
+    : p_m(m), p_M(M), p_parent(parent), p_isLeaf(isLeaf) 
 {
 }
 
-RNode* RNode::parent() const
+void RNode::addMBR(BaseRectangle* mbr) // adiciona o retângulo no objeto de dados?
 {
-    return p_parent;
+    p_mbr = mbr;
 }
 
-void RNode::setLeaf(bool isLeaf)
+bool RNode::isLeaf() const // flag que diz se é folha
 {
-    p_isleaf = isLeaf;
+    return p_isLeaf;
 }
 
-void RNode::insert(RNode* nrnode)
+void RNode::setIsLeaf(bool isLeaf) // "seta" como folha
 {
-    // Adaptando uma forma de zerar o contador quando os elementos a serem inseridos estão
-    // em um contexto de nó não folha
-    if (isLeaf())
-    {
-        if (p_size != 0)
-            p_size = 0;
-    }
-
-    p_size += 1;
-    nrnode->p_parent = this; // definindo o pai
-    p_children.push_back(nrnode);
-
-    if (p_mbr == nullptr)
-    {
-        p_mbr = nrnode->p_mbr;
-    }
-
-    // Atualiza o MBR do nó atual para que a mudança feita na inserção
-    // reflita em todo o restante da árvore
-    UpdateMBR(nrnode->p_mbr);
+    p_isLeaf = isLeaf;
 }
 
-BaseRectangle* RNode::mbr()
+bool RNode::isFullOfChildren() const // veririca se atingiu o número máximo de entradas
+{
+    return p_children.size() >= p_M;
+}
+
+void RNode::addChildren(RNode* child) // adiciona filho em um certo nó
+{
+    child->p_parent = this; // Criando a associação entre os nós
+    p_children.push_back(child);
+
+    updateMBR_(); // mantém o MBR do nó atualizado
+}
+
+BaseRectangle* RNode::mbr() const
 {
     if (isLeaf())
         return p_mbr;
@@ -92,88 +84,35 @@ BaseRectangle* RNode::mbr()
     );
 }
 
-void RNode::addMBR(BaseRectangle* mbr)
+void RNode::updateMBR_() // atualiza o retângulo de cobertura
 {
-    p_mbr = mbr;
+    BaseRectangle* b = p_children.at(0)->mbr();
+    for(std::size_t i = 0; i < p_children.size(); ++i)
+    {
+        b = RectangleAppend(b, p_children.at(i)->mbr());
+    }
+
+    p_mbr = b;
 }
 
-void RNode::UpdateMBR(BaseRectangle* nBaseRectangle)
+RNode* RNode::chooseLeaf_(RNode* N, BaseRectangle* newRect)
 {
-    p_mbr = RectangleAppend(p_mbr, nBaseRectangle);
-}
+    if (N->isLeaf())
+        return N;
 
-bool RNode::isLeaf()
-{
-    // ADAPTAÇÃO
-    if (!p_isleaf)
-        return p_isleaf;
+    RNode* selectedNode = N;
+    double maxGainArea = AreaGain(N->mbr(), newRect);
 
-    // Quando chega ao máximo
-    // entende-se que o nó deixa de ser uma folha, 
-    // pois vai ser dividido.
-    // Talvez o membro de dados p_isleaf pode ser utilizado
-    // para representar de forma mais natural o crescimento da árvore
-    p_isleaf = (p_size <= p_M);
-    return p_isleaf;
-}
+    // isso aqui ocorreu em um dos testes que fiz
+    // a inserção em um N fazia o MBR ser zero (O MBR de N era muito grande,
+    // e o newRect pequeno, ai não mudava em nada o MBR)
+    if (maxGainArea == 0)
+    {
+        return N;
+    }
 
-// Buscar entender a forma do "isEmpty()"
-bool RNode::isFull()
-{
-    // Alterado para >= para testes
-    if (isLeaf())
-        return p_children.size() >= p_M;
-    return p_parentChildren.size() >= p_M;
-}
-
-// Retorna os membros do conjunto de dados
-std::vector<RNode*> RNode::children() const
-{
-    return p_children;
-}
-
-void RNode::addParent(RNode* root)
-{
-   p_parent = root;
-}
-
-// Apaga os membros do conjunto de dados
-void RNode::clearDataChildren()
-{
-    p_children.clear(); // 
-}
-
-void RNode::addParentChildren(RNode* nnode)
-{
-    nnode->addParent(this);
-    p_parentChildren.push_back(nnode);
-}
-
-// Retorna os membros do conjunto de filhos
-std::vector<RNode*> RNode::parentChildren() const
-{
-    return p_parentChildren;
-}
-
-/**
- * Definição da classe e operações da RTree propriamente dita
-*/
-RTree::RTree(std::size_t m, std::size_t M)
-    : p_m(m), p_M(M)
-{
-    root = new RNode(m, M, nullptr);
-}
-
-RNode* ChooseLeaf(RNode* root, BaseRectangle* newRect)
-{
-    if (root->isLeaf())
-        return root;
-
-    RNode* selectedNode = root;
-    double maxGainArea = AreaGain(root->mbr(), newRect);
-
-    // Buscando o nó que possuí o menor crescimento do MBR
-    for(auto node: root->children())
+    // Buscando o nó que possui o menor crescimento do MBR
+    for(auto node: N->p_children)
     {
         double areaGain = AreaGain(node->mbr(), newRect);
 
@@ -182,21 +121,34 @@ RNode* ChooseLeaf(RNode* root, BaseRectangle* newRect)
             selectedNode = node;
             maxGainArea = areaGain;
         }
-    }
 
+        if (areaGain == maxGainArea)
+        {
+            // caso seja igual, o problema será resolvido escolhendo o retângulo
+            // de menor área
+            double actualNodeArea = RectangleArea(selectedNode->mbr());
+            double possibleNodeArea = RectangleArea(node->mbr());
+
+            if (actualNodeArea > possibleNodeArea)
+            {
+                maxGainArea = areaGain;
+                selectedNode = node;
+            }
+        }
+    }
     // Realiza a operação até os nós folhas
-    return ChooseLeaf(selectedNode, newRect);
+    return chooseLeaf_(selectedNode, newRect);
 }
 
-std::vector<RNode*> QuadraticPickSeeds(std::vector<RNode*>& vec) //(RNode* root)
+std::vector<RNode*> RNode::quadraticPickSeeds_(std::vector<RNode*>& vec)
 {
-    double d = std::numeric_limits<double>::min();
     RNode* wrongE1, *wrongE2;
+    double d = std::numeric_limits<double>::min();
 
     // Buscando o pior par
-    for(auto e1: vec) //root->children())
+    for(auto e1: vec)
     {
-        for(auto e2: vec) //root->children())
+        for(auto e2: vec)
         {
             if (e1 != e2)
             {
@@ -212,10 +164,11 @@ std::vector<RNode*> QuadraticPickSeeds(std::vector<RNode*>& vec) //(RNode* root)
             }
         }
     }
+    
     return std::vector<RNode*>({wrongE1, wrongE2});
 }
 
-RNode* QuadraticPickNext(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo)
+RNode* RNode::quadraticPickNext_(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo)
 {
     std::size_t indexOfSelectedNode = -1; // Para auxiliar a remoção do elemento selecionado
     RNode* nodeWithMaxDifference = nullptr;
@@ -234,7 +187,7 @@ RNode* QuadraticPickNext(std::vector<RNode*>& children, RNode* groupOne, RNode* 
 
         if (difference > maxDifference)
         {
-            indexOfSelectedNode = i;
+            indexOfSelectedNode = i; // apenas para remover o elemento selecionado 
             maxDifference = difference;
             nodeWithMaxDifference = entry;
         }
@@ -243,11 +196,7 @@ RNode* QuadraticPickNext(std::vector<RNode*>& children, RNode* groupOne, RNode* 
     return nodeWithMaxDifference;
 }
 
-
-// ToDo: Trocar esta função
-// Método feito APENAS PARA TESTE
-// O Código é MUITO RUIM E NÃO CONSOME A API DO C++ corretamente
-bool ElementIsInAVector(std::vector<RNode*>& vec, RNode* el)
+bool elementsIsInVector(std::vector<RNode*>& vec, RNode* el)
 {
     for(auto vEl: vec)
     {
@@ -257,29 +206,48 @@ bool ElementIsInAVector(std::vector<RNode*>& vec, RNode* el)
     return false;
 }
 
-/**
- * Este método faz o split utilizando o QuadraticSplit. No estado atual do método
- * ainda não é feito o 'balanceamento' para verificar a quantidade de elementos em cada um dos
- * grupos e se os mesmos possuem o mínimo necessário para o funcionamento, tal operação será
- * revisitada mais tarde.
- */
-std::vector<RNode*> QuadraticSplit(std::vector<RNode*>& children)// (RNode* root)
+std::vector<RNode*> RNode::quadraticSplit_(RNode* L)
 {
-    // Cria os dois novos grupos
-    RNode* groupOne = new RNode();
-    RNode* groupTwo = new RNode();
+    std::vector<RNode*> children = L->p_children;
+    L->p_children.clear(); // pode limpar já que ele está sendo dividido
+                           // e seu conteúdo será redistribuído na função abaixo
 
-    // Encontrando o pior par para ficarem separados    
-    std::vector<RNode*> wrongSeeds = QuadraticPickSeeds(children); //(root);
+    // Cria os dois novos grupos (Nós folha)
+    RNode* groupOne = L; // aponta para L, mantendo todas as suas características
+    RNode* groupTwo = new RNode(p_m, p_M);
 
-    groupOne->insert(wrongSeeds.at(0));
-    groupTwo->insert(wrongSeeds.at(1));
-    // std::vector<RNode*> children = root->children();
- 
-    // Percorrendo todos os elementos para inserir os mesmos dentro de cada um dos grupos criados
-    while (!children.empty()) // Com isto, estou garantindo que todos os elementos serão percorridos.
+    // Encontrando o pior par para separar eles    
+    std::vector<RNode*> wrongSeeds = quadraticPickSeeds_(children);
+
+    groupOne->addChildren(wrongSeeds.at(0));
+    groupTwo->addChildren(wrongSeeds.at(1));
+
+    bool isFinish = false;
+    while (!children.empty())
     {
-        RNode* nextEntry = QuadraticPickNext(children, groupOne, groupTwo);
+        // QS2 (Verificando se acabou)
+        for(auto group: {groupOne, groupTwo})
+        {
+            // Verificando se algum dos grupos pode ficar sem a quantidade mínima de
+            // elementos necessárias pela definição da árvore
+            // "A quantidade de nós atuais no grupo consegue alcançar o mínimo quando somada
+            // a quantidade de elementos que estão disponíveis para utilização"
+            std::size_t elSize = (group->p_children.size() + children.size());
+            if (elSize <= p_m)
+            {
+                for(std::size_t inode = 0; group->p_children.size() < p_m; ++inode)
+                {
+                    group->addChildren(children.at(inode));
+                    children.erase(children.begin() + inode);
+                }
+                isFinish = true;
+            }
+        }
+        if (isFinish)
+            return std::vector<RNode*> ({ groupOne, groupTwo });
+
+        // QS3 (Seleciona entrada para atribuir)
+        RNode* nextEntry = quadraticPickNext_(children, groupOne, groupTwo);
     
         double areaGainG1 = AreaGain(groupOne->mbr(), nextEntry->mbr());
         double areaGainG2 = AreaGain(groupTwo->mbr(), nextEntry->mbr());
@@ -295,8 +263,8 @@ std::vector<RNode*> QuadraticSplit(std::vector<RNode*>& children)// (RNode* root
         {
             // Se o ganho de área for igual, é preciso de uma forma de desempate
             // 1° - Quantidade de elementos no grupo
-            std::size_t g1Size = groupOne->children().size();
-            std::size_t g2Size = groupTwo->children().size();
+            std::size_t g1Size = groupOne->p_children.size();
+            std::size_t g2Size = groupTwo->p_children.size();
             if (g1Size != g2Size)
             {
                 // Verifica os tamanhos de cada grupo
@@ -315,96 +283,117 @@ std::vector<RNode*> QuadraticSplit(std::vector<RNode*>& children)// (RNode* root
             }
         }
         // Insere no grupo selecionado com base nos critérios definidos no artigo
-        std::vector<RNode*> vec = selectedGroup->children();
-        if (!ElementIsInAVector(vec, nextEntry))
-            selectedGroup->insert(nextEntry);
+        if (!elementsIsInVector(selectedGroup->p_children, nextEntry))
+            selectedGroup->addChildren(nextEntry);
     }
 
     return std::vector<RNode*> ({ groupOne, groupTwo });
 }
 
-void AdjustTree(RNode* root, RNode* N, RNode* NN)
+void RNode::adjustTree_(RNode* root, RNode* N, RNode* NN)
 {
-    if (N == root) // adicionar um método isRoot() ?
+    if(N == root)
         return;
 
-    RNode* L = N, *LL = nullptr;
+    RNode* pParent = N->p_parent;
+    pParent->updateMBR_();
 
-    // Ao que entendi esta operação é feita apenas para que, as entradas de MBR
-    // no nó pai sejam atualizadas, porém no caso desta implementação, tal atualização
-    // é feita durante a construção da árvore.
-
-    // Ajustando EN.I das entradas EN do nó pai
-    // BaseRectangle *br = nullptr;
-    // std::vector<RNode*> vec1 = N->children();
-    // for(std::size_t i = 0; i < vec1.size(); ++i)
-    // {
-    //     if (br == nullptr)
-    //     {
-    //         br = vec1.at(i)->mbr();
-    //     } else 
-    //     {
-    //         br = RectangleAppend(br, vec1.at(i)->mbr());
-    //     }
-    // }
-    // Esta parte precisa ser revisitada, aqui há um problema 
-    root->insert(N); // o MBR gerado é recursivo ? 
-    if (NN)
-        root->insert(NN);
-    if (root->isFull())
+    if (NN != nullptr)
     {
-        std::vector<RNode*> LElements = NN->children();
-        std::vector<RNode*> nAndNN = QuadraticSplit(LElements);
-    
-        L = nAndNN.at(0);
-        LL = nAndNN.at(1);
-
-        // Adicionando os novos elementos gerados como filhos da raiz atual
-        root->addParentChildren(L);
-        root->addParentChildren(LL);
+        // Se o pai não estiver cheio de filhos, adiciona o NN
+        if (!pParent->isFullOfChildren())
+        {
+            pParent->addChildren(NN);
+            adjustTree_(root, pParent, nullptr); // Não tem divisão, NN = nullprt
+        }
+        else
+        {
+            std::vector<RNode*> PAndPP = quadraticSplit_(pParent);
+            adjustTree_(root, PAndPP.at(0), PAndPP.at(1));
+        }
     }
-    if (LL)
-        AdjustTree(root, L->parent(), LL->parent());
-    AdjustTree(root, L->parent(), nullptr);
+}
+
+RNode* RNode::insert_(RNode* nn)
+{
+    RNode* L = chooseLeaf_(this, nn->mbr());
+
+    // Se está cheio não pode inserir NN, precisa realizar a operação de split
+    if (L->isFullOfChildren())
+    {
+        std::cout << "Dentro da função insert, dentro da condicional que está cheio de filhos" << std::endl;
+        L->addChildren(nn);
+
+        std::vector<RNode*> LAndLL = quadraticSplit_(L);
+        adjustTree_(this, LAndLL.at(0), LAndLL.at(1));
+        // Dúvida: Aqui defini que um nó folha é aquele que possuí filhos
+        // pq a dúvida ? A dúvida aqui veio por estarmos utilizando o mesmo
+        // container para armazenar nós e folhas...quando penso sobre
+        // as vezes parece não fazer diferença, mas fiquei com a dúvida..
+        LAndLL.at(0)->setIsLeaf(LAndLL.at(0)->p_children.empty());
+        LAndLL.at(1)->setIsLeaf(LAndLL.at(1)->p_children.empty());
+
+        // Verificando se L é a raiz
+        // Caso seja, uma divisão na raiz ocorreu
+        if (L == this)
+        {
+            RNode* newRoot = new RNode(p_m, p_M, nullptr, false); // criando novo nó
+            newRoot->addChildren(LAndLL.at(0));
+            newRoot->addChildren(LAndLL.at(1));
+
+            std::cout << "Uma divisão na raiz ocorreu" << std::endl;
+
+            return newRoot;
+        }
+    } else
+    {
+        std::cout << "Dentro da função insert, não está cheio, inseriu: " << nn << std::endl;
+        L->addChildren(nn);
+    }
+    return this;
+}
+
+// Função de busca
+std::vector<RNode*> RNode::search_(RNode* root, BaseRectangle* rect)
+{
+    if(root->isLeaf()) // se for folha, verifica e guarda os retangulos que sobrepoem
+    {
+        if(Overslaps(root,rect) == 0)
+        {
+            std::cout << "Adicionando nó no vetor de nós cujos retângulos sobrepoem" << std::endl;
+            overslaps_.push_back(root); // REVISAR pq qnd for fazer uma nova busca com outro retângulo
+                                        // ele vai continuar adicionando aqui, e isso será errado
+        }
+    }
+    else // se não for folha, verifica se sobrepõe
+    {
+        if(Overslaps(root,rect) == 0) // se sobrepõe
+        {
+            std::cout << "Checando a subárvore do nó cujo retangulo sobrepoe" << std::endl;
+            return search_(root->children(), rect); // checa a subárvore
+        }
+    }
+}
+
+/**
+ * Definição da classe e operações da RTree propriamente dita
+*/
+RTree::RTree(std::size_t m, std::size_t M)
+    : p_m(m), p_M(M)
+{
+    root = new RNode(m, M, nullptr);
+    root->setIsLeaf(true);
 }
 
 void RTree::insert(BaseRectangle* rect)
 {
-    RNode* newRNode = new RNode(p_m, p_M);
-    newRNode->addMBR(rect);
+    RNode* nn = new RNode(p_m, p_M, nullptr, true);
+    nn->addMBR(rect);
 
-    RNode* L = ChooseLeaf(root, rect);
-    RNode* LL = nullptr; // separando espaço para L e LL
-    std::cout << L << std::endl;
+    root = root->insert_(nn);
+}
 
-    if (L->isFull())
-    {
-        // L->insert(newRNode);
-        // l->
-        // Junta todos os elementos em um vetor só e então 
-        // pede para que este seja dividido
-        std::vector<RNode*> LElements = L->children();
-        LElements.push_back(newRNode);
-
-        std::vector<RNode*> nAndNN = QuadraticSplit(LElements);
-
-        // Define L e LL como sendo os novos nós, gerados através do split
-        L = nAndNN.at(0);
-        LL = nAndNN.at(1);
-
-        // Transformando o nó atual (Que antes era folha) em um nó intermediário
-        // Isso aqui é comportamento de quem ? Do nó, ele não deve ficar exposto desta forma!!! Pensar sobre
-        root->clearDataChildren();
-        root->addParentChildren(L);
-        root->addParentChildren(LL);
-    }
-    else
-    {
-        // Define que a raiz atual será o nó pai 
-        newRNode->addParent(root);
-        L->insert(newRNode);
-    }
-    
-    // AdjustTree deve vir aqui
-    AdjustTree(root, L, LL);
+void RTree::search(BaseRectangle* rect)
+{
+    // ver como vai ficar aqui
 }
