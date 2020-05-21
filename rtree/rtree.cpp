@@ -395,5 +395,5 @@ void RTree::search(BaseRectangle* rect)
     std::vector<RNode*> teste;
     root=root->search_(root->p_children, rect, teste);
     for(std::size_t i=0; i<teste.size(); ++i)
-        std::cout << "Vetor de endereços que retorna da função search_" << &teste.at(i) << std::endl;
+        std::cout << "Vetor de endereços que retorna da função search_: " << &teste.at(i) << std::endl;
 }
