@@ -356,19 +356,19 @@ RNode* RNode::insert_(RNode* nn)
 // Função de busca
 //Recursiva 
 
-std::vector<RNode*> RNode::search_(RNode* root, BaseRectangle* rect)
+RNode* RNode::search_(std::vector<RNode*>& children, BaseRectangle* rect, std::vector<RNode*>& overslaps_)
 {
-    std::vector<RNode*> overslaps_;
-    if(Overslaps(root->mbr(),rect) == 0)
+    for(std::size_t i=0; i<children.size(); ++i) // para todas as entradas do nó a partir da raiz
     {
-        std::cout << "Se a raiz intercepta, verifica as subárvores da raiz" << std::endl;
-        for(std::size_t i=0; i<p_children.size(); ++i)
+        if(Overslaps(children.at(i)->mbr(), rect)) // verifica se sobrepõe
         {
-            if(Overslaps(p_children.at(i)->mbr(),rect))
-                 overslaps_.push_back(p_children.at(i));
+            if(children.at(i)->isLeaf()) // se for folha, verifica 
+                overslaps_.push_back(children.at(i));
+            else // se nãofor folha
+                return(search_(children.at(i)->p_children, rect, overslaps_)); // verifica a subárvore dos que sobrepõem
         }
     }
-    return overslaps_;
+    return(children.at(0)); // só pra retornar alguma coisa
 }
 
 
@@ -392,7 +392,8 @@ void RTree::insert(BaseRectangle* rect)
 
 void RTree::search(BaseRectangle* rect)
 {
-    std::vector<RNode*> teste=root->search_(root, rect);
+    std::vector<RNode*> teste;
+    root=root->search_(root->p_children, rect, teste);
     for(std::size_t i=0; i<teste.size(); ++i)
-        std::cout << teste.at(i) << std::endl;
+        std::cout << "Vetor de endereços que retorna da função search_" << &teste.at(i) << std::endl;
 }
