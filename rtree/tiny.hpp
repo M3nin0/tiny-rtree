@@ -45,6 +45,11 @@ private:
     // std::vector<RNode*> quadraticSplit_(std::vector<RNode*>& children); esse estava com a lógica errada
     std::vector<RNode*> quadraticSplit_(RNode* L);
     
+    // Versão linear do split de dados
+    std::vector<RNode*> linearSplit_(RNode* L);
+    RNode* linearPickNext_(std::vector<RNode*>& children);
+    std::vector<RNode*> linearPickSeeds_(std::vector<RNode*>& vec);
+
     // Métodos de controle geométrico do nó
     void updateMBR_();
 };

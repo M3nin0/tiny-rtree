@@ -365,3 +365,161 @@ void RTree::insert(BaseRectangle* rect)
 
     root = root->insert_(nn);
 }
+
+/**
+ * Criando a inserção de custo linear
+ */
+std::vector<RNode*> RNode::linearSplit_(RNode* L)
+{
+    // Por agora estou copiando o código todo do quadraticSplit
+    // em seguida, podemos generalizar com um padrão Strategy ou algo do tipo
+    std::vector<RNode*> children = L->p_children;
+    L->p_children.clear(); // pode limpar já que ele está sendo dividido
+                           // e seu conteúdo será redistribuído na função abaixo
+
+    // Cria os dois novos grupos (Nós folha)
+    RNode* groupOne = L; // aponta para L, mantendo todas as suas características
+    RNode* groupTwo = new RNode(p_m, p_M);
+
+    // Encontrando o pior par para separar eles    
+    std::vector<RNode*> wrongSeeds = linearPickSeeds_(children);
+
+     groupOne->addChildren(wrongSeeds.at(0));
+    groupTwo->addChildren(wrongSeeds.at(1));
+
+    bool isFinish = false;
+    while (!children.empty())
+    {
+        // QS2 (Verificando se acabou)
+        for(auto group: {groupOne, groupTwo})
+        {
+            // Verificando se algum dos grupos pode ficar sem a quantidade mínima de
+            // elementos necessárias pela definição da árvore
+            // "A quantidade de nós atuais no grupo consegue alcançar o mínimo quando somada
+            // a quantidade de elementos que estão disponíveis para utilização"
+            std::size_t elSize = (group->p_children.size() + children.size());
+            if (elSize <= p_m)
+            {
+                for(std::size_t inode = 0; group->p_children.size() < p_m; ++inode)
+                {
+                    group->addChildren(children.at(inode));
+                    children.erase(children.begin() + inode);
+                }
+                isFinish = true;
+            }
+        }
+        if (isFinish)
+            return std::vector<RNode*> ({ groupOne, groupTwo });
+
+        // QS3 (Seleciona entrada para atribuir)
+        RNode* nextEntry = linearPickNext_(children);
+    
+        double areaGainG1 = AreaGain(groupOne->mbr(), nextEntry->mbr());
+        double areaGainG2 = AreaGain(groupTwo->mbr(), nextEntry->mbr());
+
+        // Seleciona o grupo que possuí o menor ganho de área
+        // para inserir o elemento E
+        RNode* selectedGroup;
+        if (areaGainG1 > areaGainG2)
+            selectedGroup = groupTwo;
+        else if (areaGainG2 > areaGainG1)
+            selectedGroup = groupOne;
+        else if (areaGainG1 == areaGainG2)
+        {
+            // Se o ganho de área for igual, é preciso de uma forma de desempate
+            // 1° - Quantidade de elementos no grupo
+            std::size_t g1Size = groupOne->p_children.size();
+            std::size_t g2Size = groupTwo->p_children.size();
+            if (g1Size != g2Size)
+            {
+                // Verifica os tamanhos de cada grupo
+                if (g1Size > g2Size)
+                    selectedGroup = groupTwo;
+                else if (g2Size > g1Size)
+                    selectedGroup = groupOne;
+            } else {
+                // 2° Adiciona em qualquer grupo (Random)
+                std::size_t groupIndex = rand() % 2 + 1;
+
+                if (groupIndex == 1)
+                    selectedGroup = groupOne;
+                else
+                    selectedGroup = groupTwo;
+            }
+        }
+        // Insere no grupo selecionado com base nos critérios definidos no artigo
+        if (!elementsIsInVector(selectedGroup->p_children, nextEntry))
+            selectedGroup->addChildren(nextEntry);
+    }
+
+    return std::vector<RNode*> ({ groupOne, groupTwo });
+}
+
+// A apresentação que você me mandou hj (20/05/2020) ajudou a resolver
+std::vector<RNode*> RNode::linearPickSeeds_(std::vector<RNode*>& vec)
+{
+    // Buscando na dimensão X
+    RNode* selectedNodeLadoBaixoMaisAltoX = vec.front(); // pega o primeiro para começar
+    for(auto node: vec)
+    {
+        // Isso aqui pode ser generalizado para um método que devolve as dimensões
+        // tipo o que é feito para a implementação das árvores KD-Tree
+        if (selectedNodeLadoBaixoMaisAltoX->mbr()->xmin() < node->mbr()->xmin())
+            selectedNodeLadoBaixoMaisAltoX = node;
+    }
+
+    // Buscando na dimensão X
+    RNode* selectedNodeLadoAltoMaisBaixoX = vec.front(); // pega o primeiro para começar
+    for(auto node: vec)
+    {
+        if (selectedNodeLadoAltoMaisBaixoX->mbr()->xmax() > node->mbr()->xmax())
+            selectedNodeLadoAltoMaisBaixoX = node;
+    }
+
+    // Repetindo tudo para o eixo Y
+    // Novamente, isso é só um esboço =D
+    // Buscando na dimensão Y
+    RNode* selectedNodeLadoBaixoMaisAltoY = vec.front(); // pega o primeiro para começar
+    for(auto node: vec)
+    {
+        if (selectedNodeLadoBaixoMaisAltoY->mbr()->ymin() < node->mbr()->ymin())
+            selectedNodeLadoBaixoMaisAltoY = node;
+    }
+
+    // Buscando na dimensão Y
+    RNode* selectedNodeLadoAltoMaisBaixoY = vec.front(); // pega o primeiro para começar
+    for(auto node: vec)
+    {
+        if (selectedNodeLadoAltoMaisBaixoY->mbr()->ymax() > node->mbr()->ymax())
+            selectedNodeLadoAltoMaisBaixoY = node;
+    }
+
+    // Calculando as distâncias normalizadas
+    double distanciaNormalizadaEmX = (
+        (selectedNodeLadoBaixoMaisAltoX->mbr()->xmax() - selectedNodeLadoAltoMaisBaixoX->mbr()->xmin())
+        / 
+        (selectedNodeLadoBaixoMaisAltoX->mbr()->xmin() + selectedNodeLadoAltoMaisBaixoX->mbr()->xmax())
+    );
+
+    double distanciaNormalizadaEmY = (
+        (selectedNodeLadoBaixoMaisAltoY->mbr()->ymax() - selectedNodeLadoAltoMaisBaixoY->mbr()->ymin())
+        / 
+        (selectedNodeLadoBaixoMaisAltoY->mbr()->ymin() + selectedNodeLadoAltoMaisBaixoY->mbr()->ymax())
+    );
+
+    if (distanciaNormalizadaEmX > distanciaNormalizadaEmY)
+        return std::vector<RNode*>({ selectedNodeLadoBaixoMaisAltoX,  selectedNodeLadoAltoMaisBaixoX });
+    else
+        return std::vector<RNode*>({ selectedNodeLadoBaixoMaisAltoY, selectedNodeLadoAltoMaisBaixoY });
+}
+
+RNode* RNode::linearPickNext_(std::vector<RNode*>& children)
+{
+    // Apenas para materializar o método
+    // aqui, recupero o que está disponível
+    // Provavelmente isso vai ficar diretamente dentro do linearSplit_
+    RNode* el = children.back();
+    children.pop_back();
+
+    return el;
+}
