@@ -46,7 +46,7 @@ private:
     std::vector<RNode*> quadraticSplit_(RNode* L);
 
     // Método de busca 
-    std::vector<RNode*> search_(RNode* root, BaseRectangle* rect);
+    RNode* search_(std::vector<RNode*>& children, BaseRectangle* rect, std::vector<RNode*>& overslaps_);
     
     // Métodos de controle geométrico do nó
     void updateMBR_();
