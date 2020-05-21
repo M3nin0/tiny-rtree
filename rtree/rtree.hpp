@@ -45,9 +45,8 @@ private:
     // std::vector<RNode*> quadraticSplit_(std::vector<RNode*>& children); esse estava com a lógica errada
     std::vector<RNode*> quadraticSplit_(RNode* L);
 
-    // Método de busca
-    std::vector<RNode*> search_(std::vector<RNode*>& vec, BaseRectangle* rect);
-    std::vector<RNode* overslaps_>; // provisório
+    // Método de busca 
+    std::vector<RNode*> search_(RNode* root, BaseRectangle* rect);
     
     // Métodos de controle geométrico do nó
     void updateMBR_();
@@ -63,7 +62,7 @@ public:
     void search(BaseRectangle* rect);
 private:
     RNode* root;
-    std::size_t p_m, p_M;
+    std::size_t p_m, p_M; 
 };
 
 
