@@ -7,7 +7,7 @@ RNode::RNode() // construtor vazio
 {
 }
 
-RNode::RNode(bool isLeaf)
+RNode::RNode(bool isLeaf) // construtor que já define o nó como folha
     : p_isLeaf(isLeaf)
 {
 }
@@ -22,12 +22,12 @@ RNode::RNode(std::size_t m, std::size_t M, RNode* parent) // recebe também o n�
 {
 }
 
-RNode::RNode(std::size_t m, std::size_t M, RNode* parent, bool isLeaf) // recebe a flag que diz se é folha ou não
+RNode::RNode(std::size_t m, std::size_t M, RNode* parent, bool isLeaf) // recebe também a flag que diz se é folha ou não
     : p_m(m), p_M(M), p_parent(parent), p_isLeaf(isLeaf) 
 {
 }
 
-void RNode::addMBR(BaseRectangle* mbr) // adiciona o retângulo no objeto de dados?
+void RNode::addMBR(BaseRectangle* mbr) // atribui o retângulo ao objeto de dados
 {
     p_mbr = mbr;
 }
@@ -354,26 +354,23 @@ RNode* RNode::insert_(RNode* nn)
 }
 
 // Função de busca
+//Recursiva 
+
 std::vector<RNode*> RNode::search_(RNode* root, BaseRectangle* rect)
 {
-    if(root->isLeaf()) // se for folha, verifica e guarda os retangulos que sobrepoem
+    std::vector<RNode*> overslaps_;
+    if(Overslaps(root->mbr(),rect) == 0)
     {
-        if(Overslaps(root,rect) == 0)
+        std::cout << "Se a raiz intercepta, verifica as subárvores da raiz" << std::endl;
+        for(std::size_t i=0; i<p_children.size(); ++i)
         {
-            std::cout << "Adicionando nó no vetor de nós cujos retângulos sobrepoem" << std::endl;
-            overslaps_.push_back(root); // REVISAR pq qnd for fazer uma nova busca com outro retângulo
-                                        // ele vai continuar adicionando aqui, e isso será errado
+            if(Overslaps(p_children.at(i)->mbr(),rect))
+                 overslaps_.push_back(p_children.at(i));
         }
     }
-    else // se não for folha, verifica se sobrepõe
-    {
-        if(Overslaps(root,rect) == 0) // se sobrepõe
-        {
-            std::cout << "Checando a subárvore do nó cujo retangulo sobrepoe" << std::endl;
-            return search_(root->children(), rect); // checa a subárvore
-        }
-    }
+    return overslaps_;
 }
+
 
 /**
  * Definição da classe e operações da RTree propriamente dita
@@ -395,5 +392,7 @@ void RTree::insert(BaseRectangle* rect)
 
 void RTree::search(BaseRectangle* rect)
 {
-    // ver como vai ficar aqui
+    std::vector<RNode*> teste=root->search_(root, rect);
+    for(std::size_t i=0; i<teste.size(); ++i)
+        std::cout << teste.at(i) << std::endl;
 }
