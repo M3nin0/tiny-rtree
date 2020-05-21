@@ -313,59 +313,6 @@ void RNode::adjustTree_(RNode* root, RNode* N, RNode* NN)
     }
 }
 
-RNode* RNode::insert_(RNode* nn)
-{
-    RNode* L = chooseLeaf_(this, nn->mbr());
-
-    // Se está cheio não pode inserir NN, precisa realizar a operação de split
-    if (L->isFullOfChildren())
-    {
-        L->addChildren(nn);
-
-        std::vector<RNode*> LAndLL = quadraticSplit_(L);
-        adjustTree_(this, LAndLL.at(0), LAndLL.at(1));
-        // Dúvida: Aqui defini que um nó folha é aquele que possuí filhos
-        // pq a dúvida ? A dúvida aqui veio por estarmos utilizando o mesmo
-        // container para armazenar nós e folhas...quando penso sobre
-        // as vezes parece não fazer diferença, mas fiquei com a dúvida..
-        LAndLL.at(0)->setIsLeaf(LAndLL.at(0)->p_children.empty());
-        LAndLL.at(1)->setIsLeaf(LAndLL.at(1)->p_children.empty());
-
-        // Verificando se L é a raiz
-        // Caso seja, uma divisão na raiz ocorreu
-        if (L == this)
-        {
-            RNode* newRoot = new RNode(p_m, p_M, nullptr, false); // criando novo nó
-            newRoot->addChildren(LAndLL.at(0));
-            newRoot->addChildren(LAndLL.at(1));
-
-            return newRoot;
-        }
-    } else
-    {
-        L->addChildren(nn);
-    }
-    return this;
-}
-
-/**
- * Definição da classe e operações da RTree propriamente dita
-*/
-RTree::RTree(std::size_t m, std::size_t M)
-    : p_m(m), p_M(M)
-{
-    root = new RNode(m, M, nullptr);
-    root->setIsLeaf(true);
-}
-
-void RTree::insert(BaseRectangle* rect)
-{
-    RNode* nn = new RNode(p_m, p_M, nullptr, true);
-    nn->addMBR(rect);
-
-    root = root->insert_(nn);
-}
-
 /**
  * Criando a inserção de custo linear
  */
@@ -384,7 +331,7 @@ std::vector<RNode*> RNode::linearSplit_(RNode* L)
     // Encontrando o pior par para separar eles    
     std::vector<RNode*> wrongSeeds = linearPickSeeds_(children);
 
-     groupOne->addChildren(wrongSeeds.at(0));
+    groupOne->addChildren(wrongSeeds.at(0));
     groupTwo->addChildren(wrongSeeds.at(1));
 
     bool isFinish = false;
@@ -456,6 +403,8 @@ std::vector<RNode*> RNode::linearSplit_(RNode* L)
 }
 
 // A apresentação que você me mandou hj (20/05/2020) ajudou a resolver
+// o código precisa ser arrumado e generalizado, mas por agora só a lógica
+// já é o suficiente (eu acho)
 std::vector<RNode*> RNode::linearPickSeeds_(std::vector<RNode*>& vec)
 {
     // Buscando na dimensão X
@@ -522,4 +471,57 @@ RNode* RNode::linearPickNext_(std::vector<RNode*>& children)
     children.pop_back();
 
     return el;
+}
+
+RNode* RNode::insert_(RNode* nn)
+{
+    RNode* L = chooseLeaf_(this, nn->mbr());
+
+    // Se está cheio não pode inserir NN, precisa realizar a operação de split
+    if (L->isFullOfChildren())
+    {
+        L->addChildren(nn);
+
+        std::vector<RNode*> LAndLL = linearSplit_(L);//quadraticSplit_(L);
+        adjustTree_(this, LAndLL.at(0), LAndLL.at(1));
+        // Dúvida: Aqui defini que um nó folha é aquele que possuí filhos
+        // pq a dúvida ? A dúvida aqui veio por estarmos utilizando o mesmo
+        // container para armazenar nós e folhas...quando penso sobre
+        // as vezes parece não fazer diferença, mas fiquei com a dúvida..
+        LAndLL.at(0)->setIsLeaf(LAndLL.at(0)->p_children.empty());
+        LAndLL.at(1)->setIsLeaf(LAndLL.at(1)->p_children.empty());
+
+        // Verificando se L é a raiz
+        // Caso seja, uma divisão na raiz ocorreu
+        if (L == this)
+        {
+            RNode* newRoot = new RNode(p_m, p_M, nullptr, false); // criando novo nó
+            newRoot->addChildren(LAndLL.at(0));
+            newRoot->addChildren(LAndLL.at(1));
+
+            return newRoot;
+        }
+    } else
+    {
+        L->addChildren(nn);
+    }
+    return this;
+}
+
+/**
+ * Definição da classe e operações da RTree propriamente dita
+*/
+RTree::RTree(std::size_t m, std::size_t M)
+    : p_m(m), p_M(M)
+{
+    root = new RNode(m, M, nullptr);
+    root->setIsLeaf(true);
+}
+
+void RTree::insert(BaseRectangle* rect)
+{
+    RNode* nn = new RNode(p_m, p_M, nullptr, true);
+    nn->addMBR(rect);
+
+    root = root->insert_(nn);
 }
