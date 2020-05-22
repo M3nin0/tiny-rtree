@@ -18,5 +18,11 @@ int main()
     rTree.insert(new BaseRectangle(600, 620, 34, 67));
     rTree.insert(new BaseRectangle(89, 98, 78, 99));
 
+    // testando o split com mais nós na árvore
+    rTree.insert(new BaseRectangle(700, 820, 999, 1090));
+
+    // Testando o split do segundo nível
+    rTree.insert(new BaseRectangle(700, 820, 999, 1090));
+
     return 0;
 }

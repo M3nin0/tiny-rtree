@@ -100,11 +100,14 @@ RNode* RNode::chooseLeaf_(RNode* N, BaseRectangle* newRect)
         return N;
 
     RNode* selectedNode = N;
-    double maxGainArea = AreaGain(N->mbr(), newRect);
+    // AreaGain(N->mbr(), newRect); = Estava deixando a árvore desbalanceada
+    double maxGainArea = std::numeric_limits<double>::max(); // AreaGain(N->mbr(), newRect);
 
     // isso aqui ocorreu em um dos testes que fiz
     // a inserção em um N fazia o MBR ser zero (O MBR de N era muito grande,
     // e o newRect pequeno, ai não mudava em nada o MBR)
+    // Foi alterado acima, no lugar do AreaGain foi colocado o máximo do double
+    // isso faz com que talvez esta operação possa ser removida
     if (maxGainArea == 0)
     {
         return N;
@@ -115,13 +118,13 @@ RNode* RNode::chooseLeaf_(RNode* N, BaseRectangle* newRect)
     {
         double areaGain = AreaGain(node->mbr(), newRect);
 
-        if ( areaGain < maxGainArea )
+        if ( areaGain < maxGainArea && !node->isLeaf() )
         {
             selectedNode = node;
             maxGainArea = areaGain;
         }
 
-        if (areaGain == maxGainArea)
+        if (areaGain == maxGainArea && !node->isLeaf())
         {
             // caso seja igual, o problema será resolvido escolhendo o retângulo
             // de menor área
@@ -135,6 +138,13 @@ RNode* RNode::chooseLeaf_(RNode* N, BaseRectangle* newRect)
             }
         }
     }
+
+    // Adicionado para verificar se o nó de entrada sofreu mudanças.
+    // Caso não tenha sofrido, indica que a busca está sendo feita no nível
+    // das folhas, assim, o elemento N (Superior) deve ser devolvido.
+    if (selectedNode == N)
+        return N;
+
     // Realiza a operação até os nós folhas
     return chooseLeaf_(selectedNode, newRect);
 }
