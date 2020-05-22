@@ -317,7 +317,7 @@ void RNode::adjustTree_(RNode* root, RNode* N, RNode* NN)
         }
         else
         {
-            std::vector<RNode*> PAndPP = quadraticSplit_(pParent);
+            std::vector<RNode*> PAndPP = quadraticSplit_(pParent); // linearSplit_(pParent);
             adjustTree_(root, PAndPP.at(0), PAndPP.at(1));
         }
     }
@@ -477,6 +477,7 @@ RNode* RNode::linearPickNext_(std::vector<RNode*>& children)
     // Apenas para materializar o método
     // aqui, recupero o que está disponível
     // Provavelmente isso vai ficar diretamente dentro do linearSplit_
+    // ToDo: Verificar a inserção desses elementos de 'frente para trás' (Agora está de 'trás para frente')
     RNode* el = children.back();
     children.pop_back();
 
@@ -492,7 +493,7 @@ RNode* RNode::insert_(RNode* nn)
     {
         L->addChildren(nn);
 
-        std::vector<RNode*> LAndLL = linearSplit_(L);//quadraticSplit_(L);
+        std::vector<RNode*> LAndLL = quadraticSplit_(L); // linearSplit_(L);
         adjustTree_(this, LAndLL.at(0), LAndLL.at(1));
         // Dúvida: Aqui defini que um nó folha é aquele que possuí filhos
         // pq a dúvida ? A dúvida aqui veio por estarmos utilizando o mesmo
