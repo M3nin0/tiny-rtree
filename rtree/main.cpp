@@ -20,7 +20,7 @@ int main()
     rTree.insert(new BaseRectangle(600, 620, 34, 67));
     rTree.insert(new BaseRectangle(89, 98, 78, 99));
 
-    // Testando a busca medíocre
+    // Testando a busca
     rTree.search(new BaseRectangle(12,14,16,22));
 
     return 0;
