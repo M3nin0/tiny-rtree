@@ -356,20 +356,53 @@ RNode* RNode::insert_(RNode* nn)
 // Função de busca
 //Recursiva 
 
-RNode* RNode::search_(std::vector<RNode*>& children, BaseRectangle* rect, std::vector<RNode*>& overslaps_)
+void RNode::search_(RNode* root, BaseRectangle* rect, std::vector<RNode*>& overslaps_)
 {
-    for(std::size_t i=0; i<children.size(); ++i) // para todas as entradas do nó a partir da raiz
+    if(root->isLeaf())
     {
-        if(Overslaps(children.at(i)->mbr(), rect)) // verifica se sobrepõe
+        std::cout << "Dentro da funcao search_: o no e folha, vou verificar os elementos do vector dele" << std::endl;
+        for(std::size_t i=0; i<root->p_children.size(); ++i)
         {
-            if(children.at(i)->isLeaf()) // se for folha, verifica 
-                overslaps_.push_back(children.at(i));
-            else // se nãofor folha
-                return(search_(children.at(i)->p_children, rect, overslaps_)); // verifica a subárvore dos que sobrepõem
+            if(Overslaps(root->p_children.at(i)->mbr(), rect))
+                overslaps_.push_back(root->p_children.at(i));
+        }
+        return;
+    }
+    else
+    {
+        std::cout << "Dentro da funcao search_: o no nao e folha, vou pras subarvores" << std::endl;
+        for(std::size_t i=0; i<root->p_children.size(); ++i)
+        {
+            return(search_(root->p_children.at(i),rect,overslaps_));
         }
     }
-    return(children.at(0)); // só pra retornar alguma coisa
+    
 }
+
+// Função para imprimir a árvore (no caso so os retângulos que estão sendo inseridos mesmo)
+void RNode::print_(RNode* N)
+{
+    if(N->isLeaf())
+    {
+        std::cout << "O no e folha: imprimindo os elementos do vector" << std::endl;
+        for(std::size_t i=0; i<N->p_children.size(); ++i)
+        {
+            std::cout << N->p_children.at(i)->mbr()->xmin() << "\t";
+            std::cout << N->p_children.at(i)->mbr()->xmax() << "\t";
+            std::cout << N->p_children.at(i)->mbr()->ymin() << "\t";
+            std::cout << N->p_children.at(i)->mbr()->ymax() << std::endl;
+        }
+        return;
+    }
+    else
+    {
+        for(std::size_t i=0; i<N->p_children.size(); ++i)
+        {
+            return(print_(N->p_children.at(i)));
+        }
+    }  
+}
+
 
 
 /**
@@ -382,18 +415,17 @@ RTree::RTree(std::size_t m, std::size_t M)
     root->setIsLeaf(true);
 }
 
-void RTree::insert(BaseRectangle* rect)
-{
-    RNode* nn = new RNode(p_m, p_M, nullptr, true);
-    nn->addMBR(rect);
-
-    root = root->insert_(nn);
-}
-
 void RTree::search(BaseRectangle* rect)
 {
+    std::cout << "Dentro da funcao search" << std::endl;
     std::vector<RNode*> teste;
-    root=root->search_(root->p_children, rect, teste);
+    root->search_(root, rect, teste);
     for(std::size_t i=0; i<teste.size(); ++i)
-        std::cout << "Vetor de endereços que retorna da função search_: " << &teste.at(i) << std::endl;
+        std::cout << "Vetor de endereços que retorna da função search_: " << &teste.at(i) << std::endl; //não chegou a imprimir isso quando chamei a search na main
+}
+
+void RTree::print()
+{
+    std::cout << "Dentro da funcao print da RTree" << std::endl;
+    root->print_(root);
 }
