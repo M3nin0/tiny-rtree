@@ -46,10 +46,13 @@ private:
     std::vector<RNode*> quadraticSplit_(RNode* L);
 
     // Método de busca 
-    RNode* search_(std::vector<RNode*>& children, BaseRectangle* rect, std::vector<RNode*>& overslaps_);
+    void search_(RNode* root, BaseRectangle* rect, std::vector<RNode*>& overslaps_);
     
     // Métodos de controle geométrico do nó
     void updateMBR_();
+
+    // Imprime a árvore
+    void print_(RNode* N);
 };
 
 class RTree
@@ -60,6 +63,7 @@ public:
 
     void insert(BaseRectangle* rect);
     void search(BaseRectangle* rect);
+    void print();
 private:
     RNode* root;
     std::size_t p_m, p_M; 
