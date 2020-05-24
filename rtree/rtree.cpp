@@ -358,52 +358,53 @@ RNode* RNode::insert_(RNode* nn)
 
 void RNode::search_(RNode* root, BaseRectangle* rect, std::vector<RNode*>& overslaps_)
 {
-    if(root->isLeaf())
+    if(root->isLeaf()) // é folha, então nenhum dos elementos vector tem ponteiro pra filho, todos eles só têm entradas
     {
         std::cout << "Dentro da funcao search_: o no e folha, vou verificar os elementos do vector dele" << std::endl;
-        for(std::size_t i=0; i<root->p_children.size(); ++i)
+        for(std::size_t i=0; i<root->p_children.size(); ++i) // acessando as entradas
         {
-            if(Overslaps(root->p_children.at(i)->mbr(), rect))
-                overslaps_.push_back(root->p_children.at(i));
+            if(Overslaps(root->p_children.at(i)->mbr(), rect)) // vendo se os retângulos das entradas sobrepõem o que eu to buscando
+                overslaps_.push_back(root->p_children.at(i)); // se sim, adiciona num vector pra armazenar
         }
         return;
     }
-    else
+    else // não é folha, então pelo menos um dos elementos do vector tem ponteiro pra filho
     {
         std::cout << "Dentro da funcao search_: o no nao e folha, vou pras subarvores" << std::endl;
-        for(std::size_t i=0; i<root->p_children.size(); ++i)
+        for(std::size_t i=0; i<root->p_children.size(); ++i) // passo por todos mandando suas subarvores pra search_ de novo
         {
-            return(search_(root->p_children.at(i),rect,overslaps_));
+            return(search_(root->p_children.at(i),rect,overslaps_)); // to com uma duvida aqui
+            // se um desses p_children.at(i) nao tiver filhos, ele ainda entra na função search_ e então é considerado folha no primeiro if, certo?
+            // pq se nao for, é isso que ta dando erro, provavelmente
         }
     }
     
 }
 
 // Função para imprimir a árvore (no caso so os retângulos que estão sendo inseridos mesmo)
-void RNode::print_(RNode* N)
+void RNode::print_(RNode* N) // mesmo raciocínio aqui
 {
-    if(N->isLeaf())
+    if(N->isLeaf()) // se for folha
     {
         std::cout << "O no e folha: imprimindo os elementos do vector" << std::endl;
-        for(std::size_t i=0; i<N->p_children.size(); ++i)
+        for(std::size_t i=0; i<N->p_children.size(); ++i) // vou passar por todos os elementos do vector e imprimir o mbr de cada um
         {
             std::cout << N->p_children.at(i)->mbr()->xmin() << "\t";
             std::cout << N->p_children.at(i)->mbr()->xmax() << "\t";
             std::cout << N->p_children.at(i)->mbr()->ymin() << "\t";
             std::cout << N->p_children.at(i)->mbr()->ymax() << std::endl;
         }
-        return;
+        return; // saio da função
     }
-    else
+    else // se não for folha
     {
-        for(std::size_t i=0; i<N->p_children.size(); ++i)
+        for(std::size_t i=0; i<N->p_children.size(); ++i) // então eu verifico a subárvore de cada um
         {
-            return(print_(N->p_children.at(i)));
+            return(print_(N->p_children.at(i))); // aqui tenho a mesma dúvida da função search_
+            // pq ele entra, vai ate a folha (como mostram as impressões de teste std::cout), mas quando chega la parece que nao tem nada
         }
     }  
 }
-
-
 
 /**
  * Definição da classe e operações da RTree propriamente dita
