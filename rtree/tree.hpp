@@ -13,6 +13,8 @@
  */
 class RNode
 {
+friend class RTree;
+friend class RNodeAdjuster; // ToDo: Generalizar RNodeAdjuster em uma única estrutura
 
 // Construtores
 public:
@@ -21,7 +23,7 @@ public:
     // ToDo: Colocar no construtor verificação da relação m <= M/2
     // ToDo: Adicionar estratégia de split
     // RNode();
-    RNode(std::size_t m, std::size_t M, SplitStrategy* splitStrategy);
+    RNode(std::size_t m, std::size_t M, bool isLeaf, SplitStrategy* splitStrategy);
 
 // Manipulação de parentesco
 public:
@@ -35,10 +37,11 @@ public:
 
 // Status/Características do nó
 public:
+    RNode* parent() const;
     std::size_t m() const;
     std::size_t M() const;
     SplitStrategy* strategy() const;
-    std::vector<RNode*> children() const;
+    std::vector<RNode*>& children();
 
     bool isLeaf() const;
     void setIsLeaf(bool isLeaf);
@@ -46,8 +49,8 @@ public:
 
 // Características do nó
 private:
-    bool p_isLeaf;
     std::size_t p_m, p_M;
+    bool p_isLeaf;
     SplitStrategy* p_splitStrategy;
     DimensionalRectangle2D* p_mbr;
 
@@ -55,10 +58,21 @@ private:
 private:
     RNode* p_parent;
     std::vector<RNode*> p_children;
-    
+
 private:
     void updateMBR_();
-    void insert_(RNode* nn);
+    RNode* insert_(RNode* nn);
+};
+
+/**
+ * Entidade responsável em fazer a manipulação dos nós da RTree, de modo que
+ * todas as propriedades descritas por Guttmann (1984) sejam garantidas
+ */
+class RNodeAdjuster
+{
+public:
+    static void adjustTree(RNode* root, RNode* N, RNode* NN);
+    static RNode* chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom);
 };
 
 class RTree
@@ -75,6 +89,8 @@ public:
 
 private:
     RNode* p_root;
+
+    std::size_t p_m, p_M;
 };
 
 #endif

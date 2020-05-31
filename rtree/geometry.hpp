@@ -53,7 +53,7 @@ public:
      * OBS: Método polimórfico criado para a possibilidade de generalização das geometrias
      * tratadas na árvore
      */
-    virtual DimensionalRectangle2D mbr() = 0; // Indicando que esta estrutura é polimórfica
+    virtual DimensionalRectangle2D*  mbr() = 0; // Indicando que esta estrutura é polimórfica
 };
 
 /**
@@ -72,9 +72,9 @@ private:
     double p_xmin, p_xmax, p_ymin, p_ymax;
 
 public:
-    virtual DimensionalRectangle2D mbr()
+    virtual DimensionalRectangle2D* mbr()
     {
-        return DimensionalRectangle2D{p_xmin, p_xmax, p_ymin, p_ymax};
+        return new DimensionalRectangle2D{p_xmin, p_xmax, p_ymin, p_ymax};
     }
 };
 

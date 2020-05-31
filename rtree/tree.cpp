@@ -1,16 +1,28 @@
 #include <cstddef>
 #include <algorithm>
 
+#include "SplitStrategy.hpp"
+#include "split.hpp"
+
 #include "tree.hpp"
-#include "geometry.hpp"
 
 RTree::RTree(std::size_t m, std::size_t M, SplitStrategy* splitStrategy)
+    : p_m(m), p_M(M)
 {
-    p_root = new RNode(m, M, splitStrategy);
+    p_root = new RNode(m, M, true, splitStrategy);
 }
 
-RNode::RNode(std::size_t m, std::size_t M, SplitStrategy* splitStrategy)
-    : p_m(m), p_M(M), p_splitStrategy(splitStrategy)
+void RTree::insert(Geometry* geom)
+{
+    RNode* nn = new RNode(p_m, p_M, true, p_root->strategy());
+    nn->addMBR(geom->mbr()); // ToDo: Generalizar o armazenamento do nó
+
+    p_root = p_root->insert_(nn);
+}
+
+
+RNode::RNode(std::size_t m, std::size_t M, bool isLeaf, SplitStrategy* splitStrategy)
+    : p_m(m), p_M(M), p_isLeaf(isLeaf), p_splitStrategy(splitStrategy)
 {
 }
 
@@ -30,9 +42,9 @@ DimensionalRectangle2D* RNode::mbr() const
     for(auto node: p_children)
     {
         xs.push_back(node->mbr()->min(0)); // x
-        xs.push_back(node->mbr()->min(1)); // y
+        ys.push_back(node->mbr()->min(1)); // y
         xs.push_back(node->mbr()->max(0)); // x
-        xs.push_back(node->mbr()->max(1)); // y
+        ys.push_back(node->mbr()->max(1)); // y
     }
 
     // Seleciona as maiores e menores coordenadas
@@ -90,7 +102,7 @@ std::size_t RNode::M() const
     return p_M;
 }
 
-std::vector<RNode*> RNode::children() const
+std::vector<RNode*>& RNode::children()
 {
     return p_children;
 }
@@ -100,13 +112,18 @@ SplitStrategy* RNode::strategy() const
     return p_splitStrategy;
 }
 
+RNode* RNode::parent() const
+{
+    return p_parent;
+}
+
 /**
- * Função auxiliar para a seleção do nó onde os novos elements serão inseridos
+ * DESCRIPTION: Função auxiliar para a seleção do nó onde os novos elements serão inseridos
  * 
- * Os passos implementados nesta função, representam os passos { CL1, CL2, CL3 e CL4 }
+ * OBSERVATION: Os passos implementados nesta função, representam os passos { CL1, CL2, CL3 e CL4 }
  * descrito no artigo de Guttman (1984).
  */
-RNode* chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom)
+RNode* RNodeAdjuster::chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom)
 {
     // N no parâmetro representa CL1
     // CL2
@@ -151,4 +168,69 @@ RNode* chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom)
 
     // Realiza a operação até os nós folhas
     return chooseLeaf(selectedNode, ngeom);
+}
+
+/**
+ * 
+ */
+void RNodeAdjuster::adjustTree(RNode* root, RNode* N, RNode* NN)
+{
+    if(N == root)
+        return;
+
+    RNode* pParent = N->parent();
+    pParent->updateMBR_();
+
+    if (NN != nullptr)
+    {
+        // Se o pai não estiver cheio de filhos, adiciona o NN
+        if (!pParent->isFullOfChildren())
+        {
+            pParent->addChild(NN);
+            adjustTree(root, pParent, nullptr); // Não tem divisão, NN = nullprt
+        }
+        else
+        {
+            // Para o split, a estratégia presente no nó é utilizada
+            std::vector<RNode*> PAndPP = root->p_splitStrategy->split(pParent);
+            adjustTree(root, PAndPP.at(0), PAndPP.at(1));
+        }
+    }
+}
+
+/**
+ * DESCRIPTION: Método para a inserção de elementos no nó
+ * 
+ * OBSERVATION: Os passos implementados neste método são descritos em Guttman (1984).
+ */
+RNode* RNode::insert_(RNode* nn)
+{
+    RNode* L = RNodeAdjuster::chooseLeaf(this, nn->mbr());
+
+    // Se está cheio não pode inserir NN, precisa realizar a operação de split
+    if (L->isFullOfChildren())
+    {
+        L->addChild(nn);
+
+        std::vector<RNode*> LAndLL = p_splitStrategy->split(L);
+        RNodeAdjuster::adjustTree(this, LAndLL.at(0), LAndLL.at(1));
+        
+        LAndLL.at(0)->setIsLeaf(LAndLL.at(0)->p_children.empty());
+        LAndLL.at(1)->setIsLeaf(LAndLL.at(1)->p_children.empty());
+
+        // Caso particular da raiz
+        // Se for raiz, então, uma divisão é realizada
+        if (L == this)
+        {
+            RNode* newRoot = new RNode(p_m, p_M, true, this->p_splitStrategy); 
+            newRoot->addChild(LAndLL.at(0));
+            newRoot->addChild(LAndLL.at(1));
+
+            return newRoot;
+        }
+    } else
+    {
+        L->addChild(nn);
+    }
+    return this;
 }

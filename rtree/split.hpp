@@ -5,7 +5,6 @@
 #include <stdexcept>
 
 #include "tree.hpp"
-#include "geometry.hpp"
 #include "SplitStrategy.hpp"
 
 class SplitStrategy
@@ -41,83 +40,83 @@ private:
     virtual RNode* pickNext_(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo) = 0;
 };
 
-/**
- * Função auxiliar para buscar o maior elemento do lado mais baixo da dimensão selecionada.
- * Exemplo: Imagine um quadrado 2D, "Buscar o valor mais alto, do lado mais baixo" é buscar
- * o valor de xmin mais alto.
- * 
- * No artigo de Guttman (1984), esta busca é apresentada na regra LPS1
- */
-RNode* selectHighestBass(std::vector<RNode*>& vec, std::size_t axis)
-{
-    RNode* selectedHighestBassNAxis = vec.front();
-
-    for(auto node: vec)
-    {
-        if (selectedHighestBassNAxis->mbr()->min(axis) < node->mbr()->min(0))
-            selectedHighestBassNAxis = node;
-    }
-    return selectedHighestBassNAxis;
-}
-
-/**
- * Função auxiliar para buscar o maior elemento do lado mais baixo da dimensão selecionada.
- * Exemplo: Imagine um quadrado 2D, "Buscar o valor mais baixo, do lado mais alto" é buscar
- * o valor de xmax menor.
- * 
- * No artigo de Guttman (1984), esta busca é apresentada na regra LPS1
- */
-RNode* selectLowestHigh(std::vector<RNode*>& vec, std::size_t axis)
-{
-    RNode* selectedHighestBassNAxis = vec.front();
-    for(auto node: vec)
-    {
-        if (selectedHighestBassNAxis->mbr()->max(axis) > node->mbr()->max(axis))
-            selectedHighestBassNAxis = node;
-    }
-    return selectedHighestBassNAxis;
-}
-
-/**
- * Função auxiliar para a aplicação da normalização das dimensões filtradas da regra LPS1 do artigo
- * de Guttman (1984).
- * 
- * Esta função materializa a regra LPS2
- */
-double normalizedDistanceNAxis(RNode* selectedLowestHigh, RNode* selectedHighestBass, std::size_t axis)
-{
-    DimensionalRectangle2D* selectedLowestHighMBR = selectedLowestHigh->mbr();
-    DimensionalRectangle2D* selectedHighestBassMBR = selectedHighestBass->mbr();
-
-    return (
-        (selectedHighestBassMBR->max(axis) - selectedLowestHighMBR->min(axis))
-        /
-        (selectedHighestBassMBR->min(axis) + selectedLowestHighMBR->max(axis))
-    );
-}
-
-/**
- * Método auxiliar para verificar se um elemento com uma certa referência
- * está presente no vector
- * 
- * ToDo: Melhorar
- */
-bool elementsIsInVector(std::vector<RNode*> vecx, RNode* el)
-{
-    for(auto vEl: vecx)
-    {
-        if (vEl == el)
-            return true;
-    }
-    return false;
-}
-
 class LinearSplitStrategy: public SplitStrategy
 {
 public:
     LinearSplitStrategy(): SplitStrategy() {};
 
 private:
+    /**
+     * Função auxiliar para buscar o maior elemento do lado mais baixo da dimensão selecionada.
+     * Exemplo: Imagine um quadrado 2D, "Buscar o valor mais alto, do lado mais baixo" é buscar
+     * o valor de xmin mais alto.
+     * 
+     * No artigo de Guttman (1984), esta busca é apresentada na regra LPS1
+     */
+    RNode* selectHighestBass(std::vector<RNode*>& vec, std::size_t axis)
+    {
+        RNode* selectedHighestBassNAxis = vec.front();
+
+        for(auto node: vec)
+        {
+            if (selectedHighestBassNAxis->mbr()->min(axis) < node->mbr()->min(0))
+                selectedHighestBassNAxis = node;
+        }
+        return selectedHighestBassNAxis;
+    }
+
+    /**
+     * Função auxiliar para buscar o maior elemento do lado mais baixo da dimensão selecionada.
+     * Exemplo: Imagine um quadrado 2D, "Buscar o valor mais baixo, do lado mais alto" é buscar
+     * o valor de xmax menor.
+     * 
+     * No artigo de Guttman (1984), esta busca é apresentada na regra LPS1
+     */
+    RNode* selectLowestHigh(std::vector<RNode*>& vec, std::size_t axis)
+    {
+        RNode* selectedHighestBassNAxis = vec.front();
+        for(auto node: vec)
+        {
+            if (selectedHighestBassNAxis->mbr()->max(axis) > node->mbr()->max(axis))
+                selectedHighestBassNAxis = node;
+        }
+        return selectedHighestBassNAxis;
+    }
+
+    /**
+     * Função auxiliar para a aplicação da normalização das dimensões filtradas da regra LPS1 do artigo
+     * de Guttman (1984).
+     * 
+     * Esta função materializa a regra LPS2
+     */
+    double normalizedDistanceNAxis(RNode* selectedLowestHigh, RNode* selectedHighestBass, std::size_t axis)
+    {
+        DimensionalRectangle2D* selectedLowestHighMBR = selectedLowestHigh->mbr();
+        DimensionalRectangle2D* selectedHighestBassMBR = selectedHighestBass->mbr();
+
+        return (
+            (selectedHighestBassMBR->max(axis) - selectedLowestHighMBR->min(axis))
+            /
+            (selectedHighestBassMBR->min(axis) + selectedLowestHighMBR->max(axis))
+        );
+    }
+
+    /**
+     * Método auxiliar para verificar se um elemento com uma certa referência
+     * está presente no vector
+     * 
+     * ToDo: Melhorar
+     */
+    bool elementsIsInVector(std::vector<RNode*> vecx, RNode* el)
+    {
+        for(auto vEl: vecx)
+        {
+            if (vEl == el)
+                return true;
+        }
+        return false;
+    }
+
     virtual RNode* pickNext_(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo)
     {
         throw std::runtime_error("Este método não está implementado para este classe!");
@@ -167,7 +166,7 @@ private:
 
         // Cria os dois novos grupos (Nós folha)
         RNode* groupOne = L; // aponta para L, mantendo todas as suas características
-        RNode* groupTwo = new RNode(m, M, L->strategy());
+        RNode* groupTwo = new RNode(m, M, true, L->strategy());
         
         // Encontrando o pior par para separar eles    
         std::vector<RNode*> wrongSeeds = pickSeeds_(children);

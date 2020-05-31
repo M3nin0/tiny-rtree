@@ -34,8 +34,8 @@ double DimensionalRectangle2D::max(std::size_t axis)
 double DimensionalRectangleAlgebra::RectangleArea(DimensionalRectangle2D* dimSpace)
 {
     // Calculando a área
-    double base = dimSpace->max(0) - dimSpace->max(0);
-    double height = dimSpace->max(1) - dimSpace->min(1);
+    double base = dimSpace->max(0) - dimSpace->min(0); // x
+    double height = dimSpace->max(1) - dimSpace->min(1); // y
 
     return base * height;
 }
