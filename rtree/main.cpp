@@ -8,7 +8,9 @@ int main()
 {
     // Testando os primeiros passos da inserção
     // A estratégia de split é passada por parâmetro
-    RTree rTree(2, 4, new LinearSplitStrategy());
+    RTree rTree(2, 4, new QuadraticSplitStrategy());
+    // ou
+    // RTree rTree(2, 4, new LinearSplitStrategy());
 
     // Os valores abaixo foram criados utilizando o programa rtree2.jnlp
     // junto ao código 'autortree.py'
@@ -38,30 +40,30 @@ int main()
     rTree.insert(new Rectangle(685.0, 867.0, 368.0, 536.0));
 
     // Os testes abaixo foram feitos inserido os retângulos
-    // rTree.insert(new Rectangle(0, 3, 0, 5));
-    // rTree.insert(new Rectangle(3, 6, 0, 1));
-    // rTree.insert(new Rectangle(7, 16, 5, 51));
-    // rTree.insert(new Rectangle(14, 16, 51, 510));
+    rTree.insert(new Rectangle(0, 3, 0, 5));
+    rTree.insert(new Rectangle(3, 6, 0, 1));
+    rTree.insert(new Rectangle(7, 16, 5, 51));
+    rTree.insert(new Rectangle(14, 16, 51, 510));
     
-    // // Adiciona geometria com o nó raiz cheio
-    // rTree.insert(new Rectangle(12, 13, 15, 21));
+    // Adiciona geometria com o nó raiz cheio
+    rTree.insert(new Rectangle(12, 13, 15, 21));
 
-    // // Gerando segunda camada cheia
-    // rTree.insert(new Rectangle(600, 620, 34, 67));
-    // rTree.insert(new Rectangle(89, 98, 78, 99));
+    // Gerando segunda camada cheia
+    rTree.insert(new Rectangle(600, 620, 34, 67));
+    rTree.insert(new Rectangle(89, 98, 78, 99));
 
     // // testando o split com mais nós na árvore
-    // rTree.insert(new Rectangle(700, 820, 999, 1090));
+    rTree.insert(new Rectangle(700, 820, 999, 1090));
 
     // // Testando o split do segundo nível
-    // rTree.insert(new Rectangle(400, 430, 600, 1080));
-    // rTree.insert(new Rectangle(400, 700, 34, 1080));
-    // rTree.insert(new Rectangle(400, 820, 600, 999));
-    // rTree.insert(new Rectangle(430, 600, 700, 1090));
-    // rTree.insert(new Rectangle(600, 625, 820, 999));
-    // rTree.insert(new Rectangle(98, 500, 78, 99));
-    // rTree.insert(new Rectangle(13, 21, 12, 99));
-    // rTree.insert(new Rectangle(89, 99, 78, 1809));
+    rTree.insert(new Rectangle(400, 430, 600, 1080));
+    rTree.insert(new Rectangle(400, 700, 34, 1080));
+    rTree.insert(new Rectangle(400, 820, 600, 999));
+    rTree.insert(new Rectangle(430, 600, 700, 1090));
+    rTree.insert(new Rectangle(600, 625, 820, 999));
+    rTree.insert(new Rectangle(98, 500, 78, 99));
+    rTree.insert(new Rectangle(13, 21, 12, 99));
+    rTree.insert(new Rectangle(89, 99, 78, 1809));
 
     return 0;
 }
