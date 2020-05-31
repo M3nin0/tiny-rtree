@@ -14,7 +14,6 @@
 class RNode
 {
 friend class RTree;
-friend class RNodeAdjuster; // ToDo: Generalizar RNodeAdjuster em uma única estrutura
 
 // Construtores
 public:
@@ -60,22 +59,20 @@ private:
 };
 
 /**
- * DESCRIPTION: Entidade responsável em fazer a manipulação dos nós da RTree, de modo que
- * todas as propriedades descritas por Guttmann (1984) sejam garantidas
+ * DESCRIPTION: Representação da RTree no código. Responsável pelo facade das inserções e o
+ * controle das estruturas
  */
-class RNodeAdjuster
-{
-public:
-    static void adjustTree(RNode* root, RNode* N, RNode* NN);
-    static RNode* chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom);
-};
-
 class RTree
 {
 
 // Construtores
 public:
     RTree(std::size_t m, std::size_t M, SplitStrategy* splitStrategy);
+
+// Métodos para o controle da estrutura da árvore
+public:
+    static void adjustTree(RNode* root, RNode* N, RNode* NN);
+    static RNode* chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom);
 
 public:
     // ToDo: Método pode ser generalizado para que outro tipo

@@ -123,7 +123,7 @@ RNode* RNode::parent() const
  * OBSERVATION: Os passos implementados nesta função, representam os passos { CL1, CL2, CL3 e CL4 }
  * descrito no artigo de Guttman (1984).
  */
-RNode* RNodeAdjuster::chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom)
+RNode* RTree::chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom)
 {
     // N no parâmetro representa CL1
     // CL2
@@ -173,7 +173,7 @@ RNode* RNodeAdjuster::chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom)
 /**
  * 
  */
-void RNodeAdjuster::adjustTree(RNode* root, RNode* N, RNode* NN)
+void RTree::adjustTree(RNode* root, RNode* N, RNode* NN)
 {
     if(N == root)
         return;
@@ -205,7 +205,7 @@ void RNodeAdjuster::adjustTree(RNode* root, RNode* N, RNode* NN)
  */
 RNode* RNode::insert_(RNode* nn)
 {
-    RNode* L = RNodeAdjuster::chooseLeaf(this, nn->mbr());
+    RNode* L = RTree::chooseLeaf(this, nn->mbr());
 
     // Se está cheio não pode inserir NN, precisa realizar a operação de split
     if (L->isFullOfChildren())
@@ -213,7 +213,7 @@ RNode* RNode::insert_(RNode* nn)
         L->addChild(nn);
 
         std::vector<RNode*> LAndLL = p_splitStrategy->split(L);
-        RNodeAdjuster::adjustTree(this, LAndLL.at(0), LAndLL.at(1));
+        RTree::adjustTree(this, LAndLL.at(0), LAndLL.at(1));
         
         LAndLL.at(0)->setIsLeaf(LAndLL.at(0)->p_children.empty());
         LAndLL.at(1)->setIsLeaf(LAndLL.at(1)->p_children.empty());
