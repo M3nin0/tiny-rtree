@@ -12,16 +12,25 @@ class SplitStrategy
 public:
     SplitStrategy() {  };
 
+    /**
+     * Facade com as implementações especializadas das estratégias de split
+     */
     std::vector<RNode*> split(RNode* L)
         {
             return split_(L);
         }
-    
+
+    /**
+     * Facade com as implementações especializadas das estratégias de pickSeed
+     */
     std::vector<RNode*> pickSeeds(std::vector<RNode*>& vec)
     {
         return pickSeeds_(vec);
     }
 
+    /**
+     * Facade com as implementações especializadas das estratégias de pickNext
+     */
     RNode* pickNext(std::vector<RNode*>& children,  
                                         RNode* groupOne = nullptr, RNode* groupTwo = nullptr)
     {
@@ -29,17 +38,153 @@ public:
     }
 
 private:
+
+    /**
+     * Método a ser sobrescrito pelas classes descendentes para gerar o comportamento
+     * de split da estratégia que está sendo implementada
+     */
     virtual std::vector<RNode*> split_(RNode* L) = 0;
+    
+    /**
+     * Método a ser sobrescrito pelas classes descendentes para gerar o comportamento
+     * de pickSeed da estratégia implementada
+     */
     virtual std::vector<RNode*> pickSeeds_(std::vector<RNode*>& vec) = 0;
 
+    /**
+     * Método a ser sobrescrito pelas classes descendentes para gerar o comportamento
+     * de pickNext da estratégia implementada.
+     * 
+     * A assinatura deste método é geral, podendo ser consumida por diferentes estratégias
+     * de split. Por exemplo, mesmo utilizando a estratégia linear ou quadrática, todos os
+     * parâmetros serão passados, mesmo que não utilizados, o que evita a criação e o tratamento
+     * de múltiplos métodos *pickNext* 
+     */
     virtual RNode* pickNext_(std::vector<RNode*>& children, 
                                         RNode* groupOne = nullptr, RNode* groupTwo = nullptr) = 0;
 };
 
-
+/**
+ * Classe com a implementação base para o funcionamento das estratégias de Split da RTree
+ * apresentadas por Guttmann (1984).
+ */
 class GuttmanMethod: public SplitStrategy
 {
 public:
+    /**
+     * DESCRIPTION: Método auxiliar para verificar se um elemento com uma certa referência
+     * está presente no vector
+     * 
+     * TODO: Melhorar
+     */
+    bool elementsIsInVector(std::vector<RNode*> vecx, RNode* el)
+    {
+        for(auto vEl: vecx)
+        {
+            if (vEl == el)
+                return true;
+        }
+        return false;
+    }
+
+    virtual std::vector<RNode*> split_(RNode* L)
+    {
+        std::size_t m = L->m();
+        std::size_t M = L->M();
+
+        // Por agora estou copiando o código todo do quadraticSplit
+        // Mas o código pode ser generalizado em um segundo momento
+        std::vector<RNode*> children = L->children();
+        L->children().clear();
+
+        // Cria os dois novos grupos (Nós folha)
+        RNode* groupOne = L; // aponta para L, mantendo todas as suas características
+        RNode* groupTwo = new RNode(m, M, true, L->strategy());
+        
+        // Encontrando o pior par para separar eles    
+        std::vector<RNode*> wrongSeeds = pickSeeds(children);
+
+        groupOne->addChild(wrongSeeds.at(0));
+        groupTwo->addChild(wrongSeeds.at(1));
+
+        bool isFinish = false;
+        while (!children.empty())
+        {
+            // QS2 (Verificando se acabou)
+            for(auto group: {groupOne, groupTwo})
+            {
+                // Verificando se algum dos grupos pode ficar sem a quantidade mínima de
+                // elementos necessárias pela definição da árvore
+                // "A quantidade de nós atuais no grupo consegue alcançar o mínimo quando somada
+                // a quantidade de elementos que estão disponíveis para utilização"
+                std::size_t elSize = (group->children().size() + children.size());
+                if (elSize <= m)
+                {
+                    for(std::size_t inode = 0; group->children().size() < m; ++inode)
+                    {
+                        group->addChild(children.at(inode));
+                        children.erase(children.begin() + inode);
+                    }
+                    isFinish = true;
+                }
+            }
+            if (isFinish)
+                return std::vector<RNode*> ({ groupOne, groupTwo });
+
+            // QS3 (Seleciona entrada para atribuir)
+            RNode* nextEntry = pickNext(children, groupOne, groupTwo);
+        
+            double areaGainG1 = DimensionalRectangleAlgebra::AreaGain(groupOne->mbr(), nextEntry->mbr());
+            double areaGainG2 = DimensionalRectangleAlgebra::AreaGain(groupTwo->mbr(), nextEntry->mbr());
+
+            // Seleciona o grupo que possuí o menor ganho de área
+            // para inserir o elemento E
+            RNode* selectedGroup;
+            if (areaGainG1 > areaGainG2)
+                selectedGroup = groupTwo;
+            else if (areaGainG2 > areaGainG1)
+                selectedGroup = groupOne;
+            else if (areaGainG1 == areaGainG2)
+            {
+                // Se o ganho de área for igual, é preciso de uma forma de desempate
+                // 1° - Quantidade de elementos no grupo
+                std::size_t g1Size = groupOne->children().size();
+                std::size_t g2Size = groupTwo->children().size();
+                if (g1Size != g2Size)
+                {
+                    // Verifica os tamanhos de cada grupo
+                    if (g1Size > g2Size)
+                        selectedGroup = groupTwo;
+                    else if (g2Size > g1Size)
+                        selectedGroup = groupOne;
+                } else {
+                    // 2° Adiciona em qualquer grupo (Random)
+                    std::size_t groupIndex = rand() % 2 + 1;
+
+                    if (groupIndex == 1)
+                        selectedGroup = groupOne;
+                    else
+                        selectedGroup = groupTwo;
+                }
+            }
+            // Insere no grupo selecionado com base nos critérios definidos no artigo
+            if (!elementsIsInVector(selectedGroup->children(), nextEntry))
+                selectedGroup->addChild(nextEntry);
+        }
+
+        return std::vector<RNode*> ({ groupOne, groupTwo });
+    }
+};
+
+/**
+ * Estratégia de split em tempo linear
+ */
+class LinearSplitStrategy: public GuttmanMethod
+{
+public:
+    LinearSplitStrategy(): GuttmanMethod() {};
+
+private:
     /**
      * Função auxiliar para buscar o maior elemento do lado mais baixo da dimensão selecionada.
      * Exemplo: Imagine um quadrado 2D, "Buscar o valor mais alto, do lado mais baixo" é buscar
@@ -95,29 +240,6 @@ public:
         );
     }
 
-    /**
-     * DESCRIPTION: Método auxiliar para verificar se um elemento com uma certa referência
-     * está presente no vector
-     * 
-     * TODO: Melhorar
-     */
-    bool elementsIsInVector(std::vector<RNode*> vecx, RNode* el)
-    {
-        for(auto vEl: vecx)
-        {
-            if (vEl == el)
-                return true;
-        }
-        return false;
-    }
-};
-
-class LinearSplitStrategy: public GuttmanMethod
-{
-public:
-    LinearSplitStrategy(): GuttmanMethod() {};
-
-private:
     virtual RNode* pickNext_(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo)
     {
         RNode* el = children.at(0);
@@ -149,99 +271,30 @@ private:
         else
             return std::vector<RNode*>({ selectedHighestBassY, selectedLowestHighY });
     }
-
-    virtual std::vector<RNode*> split_(RNode* L)
-    {
-        std::size_t m = L->m();
-        std::size_t M = L->M();
-
-        // Por agora estou copiando o código todo do quadraticSplit
-        // Mas o código pode ser generalizado em um segundo momento
-        std::vector<RNode*> children = L->children();
-        L->children().clear();
-
-        // Cria os dois novos grupos (Nós folha)
-        RNode* groupOne = L; // aponta para L, mantendo todas as suas características
-        RNode* groupTwo = new RNode(m, M, true, L->strategy());
-        
-        // Encontrando o pior par para separar eles    
-        std::vector<RNode*> wrongSeeds = pickSeeds_(children);
-
-        groupOne->addChild(wrongSeeds.at(0));
-        groupTwo->addChild(wrongSeeds.at(1));
-
-        bool isFinish = false;
-        while (!children.empty())
-        {
-            // QS2 (Verificando se acabou)
-            for(auto group: {groupOne, groupTwo})
-            {
-                // Verificando se algum dos grupos pode ficar sem a quantidade mínima de
-                // elementos necessárias pela definição da árvore
-                // "A quantidade de nós atuais no grupo consegue alcançar o mínimo quando somada
-                // a quantidade de elementos que estão disponíveis para utilização"
-                std::size_t elSize = (group->children().size() + children.size());
-                if (elSize <= m)
-                {
-                    for(std::size_t inode = 0; group->children().size() < m; ++inode)
-                    {
-                        group->addChild(children.at(inode));
-                        children.erase(children.begin() + inode);
-                    }
-                    isFinish = true;
-                }
-            }
-            if (isFinish)
-                return std::vector<RNode*> ({ groupOne, groupTwo });
-
-            // QS3 (Seleciona entrada para atribuir)
-            RNode* nextEntry = pickNext_(children, nullptr, nullptr);
-        
-            double areaGainG1 = DimensionalRectangleAlgebra::AreaGain(groupOne->mbr(), nextEntry->mbr());
-            double areaGainG2 = DimensionalRectangleAlgebra::AreaGain(groupTwo->mbr(), nextEntry->mbr());
-
-            // Seleciona o grupo que possuí o menor ganho de área
-            // para inserir o elemento E
-            RNode* selectedGroup;
-            if (areaGainG1 > areaGainG2)
-                selectedGroup = groupTwo;
-            else if (areaGainG2 > areaGainG1)
-                selectedGroup = groupOne;
-            else if (areaGainG1 == areaGainG2)
-            {
-                // Se o ganho de área for igual, é preciso de uma forma de desempate
-                // 1° - Quantidade de elementos no grupo
-                std::size_t g1Size = groupOne->children().size();
-                std::size_t g2Size = groupTwo->children().size();
-                if (g1Size != g2Size)
-                {
-                    // Verifica os tamanhos de cada grupo
-                    if (g1Size > g2Size)
-                        selectedGroup = groupTwo;
-                    else if (g2Size > g1Size)
-                        selectedGroup = groupOne;
-                } else {
-                    // 2° Adiciona em qualquer grupo (Random)
-                    std::size_t groupIndex = rand() % 2 + 1;
-
-                    if (groupIndex == 1)
-                        selectedGroup = groupOne;
-                    else
-                        selectedGroup = groupTwo;
-                }
-            }
-            // Insere no grupo selecionado com base nos critérios definidos no artigo
-            if (!elementsIsInVector(selectedGroup->children(), nextEntry))
-                selectedGroup->addChild(nextEntry);
-        }
-
-        return std::vector<RNode*> ({ groupOne, groupTwo });
-    }
 };
 
-class QuadraticSplitStrategy: public SplitStrategy
+/**
+ * Estratégia de split em tempo quadrático
+ */
+class QuadraticSplitStrategy: public GuttmanMethod
 {
+public:
+    QuadraticSplitStrategy(): GuttmanMethod() {};
 
+   virtual RNode* pickNext_(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo)
+    {
+        return nullptr;
+    }
+
+    /**
+     *  Este método implementa as regras de Split apresentadas no método
+     * de tempo linear no artigo de Guttman (1984). Neste, o conjunto de regras
+     * {LPS1, LPS2, LPS3} são utilizados
+     */
+    virtual std::vector<RNode*> pickSeeds_(std::vector<RNode*>& vec)
+    {
+        return std::vector<RNode*>();
+    }
 };
 
 #endif
