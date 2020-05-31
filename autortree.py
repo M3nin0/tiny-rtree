@@ -12,7 +12,7 @@ def to_cxx_rectangle(tree_name: str, text: str) -> str:
     second_tuple = el[el[1: ].index('(') + 2: -1]
     cords = (first_tuple + ',' + second_tuple).split(',')
 
-    return f'{tree_name}.insert(new BaseRectangle({cords[0]}, {cords[2]}, {cords[1]}, {cords[3]});\n'
+    return f'{tree_name}.insert(new Rectangle({cords[0]}, {cords[2]}, {cords[1]}, {cords[3]});\n'
 
 # Gera os resultados
 with open('tree.jnlp.spec.cxx', 'w') as cxxspec:
