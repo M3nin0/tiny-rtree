@@ -14,7 +14,7 @@ public:
     SplitStrategy() {  };
 
     /**
-     * Facade com as implementações especializadas das estratégias de split
+     * DESCRIPTION: Facade com as implementações especializadas das estratégias de split
      */
     std::vector<RNode*> split(RNode* L)
         {
@@ -22,7 +22,7 @@ public:
         }
 
     /**
-     * Facade com as implementações especializadas das estratégias de pickSeed
+     * DESCRIPTION: Facade com as implementações especializadas das estratégias de pickSeed
      */
     std::vector<RNode*> pickSeeds(std::vector<RNode*>& vec)
     {
@@ -30,7 +30,7 @@ public:
     }
 
     /**
-     * Facade com as implementações especializadas das estratégias de pickNext
+     * DESCRIPTION: Facade com as implementações especializadas das estratégias de pickNext
      */
     RNode* pickNext(std::vector<RNode*>& children,  
                                         RNode* groupOne = nullptr, RNode* groupTwo = nullptr)
@@ -41,22 +41,22 @@ public:
 private:
 
     /**
-     * Método a ser sobrescrito pelas classes descendentes para gerar o comportamento
+     * DESCRIPTION: Método a ser sobrescrito pelas classes descendentes para gerar o comportamento
      * de split da estratégia que está sendo implementada
      */
     virtual std::vector<RNode*> split_(RNode* L) = 0;
     
     /**
-     * Método a ser sobrescrito pelas classes descendentes para gerar o comportamento
+     *DESCRIPTION:  Método a ser sobrescrito pelas classes descendentes para gerar o comportamento
      * de pickSeed da estratégia implementada
      */
     virtual std::vector<RNode*> pickSeeds_(std::vector<RNode*>& vec) = 0;
 
     /**
-     * Método a ser sobrescrito pelas classes descendentes para gerar o comportamento
+     * DESCRIPTION: Método a ser sobrescrito pelas classes descendentes para gerar o comportamento
      * de pickNext da estratégia implementada.
      * 
-     * A assinatura deste método é geral, podendo ser consumida por diferentes estratégias
+     * OBSERVATION: A assinatura deste método é geral, podendo ser consumida por diferentes estratégias
      * de split. Por exemplo, mesmo utilizando a estratégia linear ou quadrática, todos os
      * parâmetros serão passados, mesmo que não utilizados, o que evita a criação e o tratamento
      * de múltiplos métodos *pickNext* 
@@ -66,8 +66,8 @@ private:
 };
 
 /**
- * Classe com a implementação base para o funcionamento das estratégias de Split da RTree
- * apresentadas por Guttmann (1984).
+ * DESCRIPTION: Classe com a implementação base para o funcionamento das 
+ * estratégias de Split da RTree apresentadas por Guttmann (1984).
  */
 class GuttmanMethod: public SplitStrategy
 {
@@ -250,7 +250,7 @@ private:
     }
 
     /**
-     *  Este método implementa as regras de Split apresentadas no método
+     * DESCRIPTION: Este método implementa as regras de Split apresentadas no método
      * de tempo linear no artigo de Guttman (1984). Neste, o conjunto de regras
      * {LPS1, LPS2, LPS3} são utilizados
      */
@@ -312,16 +312,16 @@ private:
     }
 
     /**
-     *  Este método implementa as regras de Split apresentadas no método
-     * de tempo linear no artigo de Guttman (1984). Neste, o conjunto de regras
-     * {LPS1, LPS2, LPS3} são utilizados
+     * DESCRIPTION: Este método implementa as regras de Split apresentadas no método
+     * de tempo quadrático no artigo de Guttman (1984). Neste, o conjunto de regras
+     * {PS1, PS2} são utilizados
      */
     virtual std::vector<RNode*> pickSeeds_(std::vector<RNode*>& vec)
     {
         RNode* wrongE1, *wrongE2;
         double d = std::numeric_limits<double>::min();
 
-        // Busca a pior combinação de nós
+        // PS1 - Busca a pior combinação de nós
         for(auto e1: vec)
         {
             for(auto e2: vec)
@@ -334,6 +334,7 @@ private:
                     DimensionalRectangle2D* base = DimensionalRectangleAlgebra::DimensionAppend(e1->mbr(), e2->mbr());
                     double dFor = DimensionalRectangleAlgebra::RectangleArea(base) - e1Area - e2Area;
 
+                    // PS2 - Escolhendo o pior par
                     if (dFor > d)
                     {
                         d = dFor;

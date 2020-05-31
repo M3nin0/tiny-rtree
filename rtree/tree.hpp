@@ -18,11 +18,6 @@ friend class RNodeAdjuster; // ToDo: Generalizar RNodeAdjuster em uma única est
 
 // Construtores
 public:
-    // Definir de acordo com a necessidade e depois
-    // generalizar
-    // ToDo: Colocar no construtor verificação da relação m <= M/2
-    // ToDo: Adicionar estratégia de split
-    // RNode();
     RNode(std::size_t m, std::size_t M, bool isLeaf, SplitStrategy* splitStrategy);
 
 // Manipulação de parentesco
@@ -65,7 +60,7 @@ private:
 };
 
 /**
- * Entidade responsável em fazer a manipulação dos nós da RTree, de modo que
+ * DESCRIPTION: Entidade responsável em fazer a manipulação dos nós da RTree, de modo que
  * todas as propriedades descritas por Guttmann (1984) sejam garantidas
  */
 class RNodeAdjuster

@@ -2,7 +2,7 @@
 #define _SPLIT_HEADER_
 
 /**
- * Classe abstrata do comportamento de Split utilizado 
+ * DESCRIPTION: Classe abstrata do comportamento de Split utilizado 
  */
 class SplitStrategy; 
 

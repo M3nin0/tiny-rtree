@@ -28,9 +28,6 @@ double DimensionalRectangle2D::max(std::size_t axis)
     throw std::domain_error("Dimensão inválida!");
 }
 
-// Retorna (dimensão minima, dimensão máxima)
-// std::array<double, 2> axis(std::size_t ax);
-
 double DimensionalRectangleAlgebra::RectangleArea(DimensionalRectangle2D* dimSpace)
 {
     // Calculando a área
