@@ -22,12 +22,8 @@ public:
         return pickSeeds_(vec);
     }
 
-    RNode* pickNext(std::vector<RNode*>& vec)
-    {
-        return pickNext_(vec);
-    }
-
-    RNode* pickNext(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo)
+    RNode* pickNext(std::vector<RNode*>& children,  
+                                        RNode* groupOne = nullptr, RNode* groupTwo = nullptr)
     {
         return pickNext_(children, groupOne, groupTwo);
     }
@@ -36,16 +32,14 @@ private:
     virtual std::vector<RNode*> split_(RNode* L) = 0;
     virtual std::vector<RNode*> pickSeeds_(std::vector<RNode*>& vec) = 0;
 
-    virtual RNode* pickNext_(std::vector<RNode*>& children) = 0;
-    virtual RNode* pickNext_(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo) = 0;
+    virtual RNode* pickNext_(std::vector<RNode*>& children, 
+                                        RNode* groupOne = nullptr, RNode* groupTwo = nullptr) = 0;
 };
 
-class LinearSplitStrategy: public SplitStrategy
+
+class GuttmanMethod: public SplitStrategy
 {
 public:
-    LinearSplitStrategy(): SplitStrategy() {};
-
-private:
     /**
      * Função auxiliar para buscar o maior elemento do lado mais baixo da dimensão selecionada.
      * Exemplo: Imagine um quadrado 2D, "Buscar o valor mais alto, do lado mais baixo" é buscar
@@ -84,7 +78,7 @@ private:
     }
 
     /**
-     * Função auxiliar para a aplicação da normalização das dimensões filtradas da regra LPS1 do artigo
+     * DESCRIPTION: Função auxiliar para a aplicação da normalização das dimensões filtradas da regra LPS1 do artigo
      * de Guttman (1984).
      * 
      * Esta função materializa a regra LPS2
@@ -102,10 +96,10 @@ private:
     }
 
     /**
-     * Método auxiliar para verificar se um elemento com uma certa referência
+     * DESCRIPTION: Método auxiliar para verificar se um elemento com uma certa referência
      * está presente no vector
      * 
-     * ToDo: Melhorar
+     * TODO: Melhorar
      */
     bool elementsIsInVector(std::vector<RNode*> vecx, RNode* el)
     {
@@ -116,13 +110,15 @@ private:
         }
         return false;
     }
+};
 
+class LinearSplitStrategy: public GuttmanMethod
+{
+public:
+    LinearSplitStrategy(): GuttmanMethod() {};
+
+private:
     virtual RNode* pickNext_(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo)
-    {
-        throw std::runtime_error("Este método não está implementado para este classe!");
-    }
-
-    virtual RNode* pickNext_(std::vector<RNode*>& children)
     {
         RNode* el = children.at(0);
         children.erase(children.begin());
@@ -199,7 +195,7 @@ private:
                 return std::vector<RNode*> ({ groupOne, groupTwo });
 
             // QS3 (Seleciona entrada para atribuir)
-            RNode* nextEntry = pickNext_(children);
+            RNode* nextEntry = pickNext_(children, nullptr, nullptr);
         
             double areaGainG1 = DimensionalRectangleAlgebra::AreaGain(groupOne->mbr(), nextEntry->mbr());
             double areaGainG2 = DimensionalRectangleAlgebra::AreaGain(groupTwo->mbr(), nextEntry->mbr());
@@ -243,9 +239,9 @@ private:
     }
 };
 
-// class QuadraticSplitStrategy: public SplitStrategy
-// {
-    
-// };
+class QuadraticSplitStrategy: public SplitStrategy
+{
+
+};
 
 #endif

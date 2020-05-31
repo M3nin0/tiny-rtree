@@ -7,8 +7,9 @@
 int main()
 {
     // Testando os primeiros passos da inserção
+    // A estratégia de split é passada por parâmetro
     RTree rTree(2, 4, new LinearSplitStrategy());
-    
+
     // Os valores abaixo foram criados utilizando o programa rtree2.jnlp
     // junto ao código 'autortree.py'
     rTree.insert(new Rectangle(588.0, 1371.0, 180.0, 617.0));
