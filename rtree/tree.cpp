@@ -222,7 +222,7 @@ RNode* RNode::insert_(RNode* nn)
         // Se for raiz, então, uma divisão é realizada
         if (L == this)
         {
-            RNode* newRoot = new RNode(p_m, p_M, true, this->p_splitStrategy); 
+            RNode* newRoot = new RNode(p_m, p_M, false, this->p_splitStrategy); 
             newRoot->addChild(LAndLL.at(0));
             newRoot->addChild(LAndLL.at(1));
 

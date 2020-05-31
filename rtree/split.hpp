@@ -2,6 +2,7 @@
 #define __SPLIT_STRATEGY_HEADER__
 
 #include <vector>
+#include <limits>
 #include <stdexcept>
 
 #include "tree.hpp"
@@ -281,9 +282,33 @@ class QuadraticSplitStrategy: public GuttmanMethod
 public:
     QuadraticSplitStrategy(): GuttmanMethod() {};
 
+private:
    virtual RNode* pickNext_(std::vector<RNode*>& children, RNode* groupOne, RNode* groupTwo)
     {
-        return nullptr;
+        std::size_t indexOfSelectedNode = -1; // Para auxiliar a remoção do elemento selecionado
+        RNode* nodeWithMaxDifference = nullptr;
+        double maxDifference = std::numeric_limits<double>::min();
+
+        for(std::size_t i = 0; i < children.size(); ++i)
+        {
+            RNode* entry = children.at(i);
+
+            // Calculando a diferença do ganho de área em cada grupo
+            // em seguida, determina se a diferença (Colocada como absoluta para evitar erros)
+            // é a máxima, caso seja, salva o nó
+            double gainGroupOne = DimensionalRectangleAlgebra::AreaGain(groupOne->mbr(), entry->mbr());
+            double gainGroupTwo = DimensionalRectangleAlgebra::AreaGain(groupTwo->mbr(), entry->mbr());
+            double difference = std::abs(gainGroupOne - gainGroupTwo);
+
+            if (difference > maxDifference)
+            {
+                indexOfSelectedNode = i; // Para ajudar a remover o elemento selecionado
+                maxDifference = difference;
+                nodeWithMaxDifference = entry;
+            }
+        }
+        children.erase(children.begin() + indexOfSelectedNode);
+        return nodeWithMaxDifference;
     }
 
     /**
@@ -293,7 +318,33 @@ public:
      */
     virtual std::vector<RNode*> pickSeeds_(std::vector<RNode*>& vec)
     {
-        return std::vector<RNode*>();
+        RNode* wrongE1, *wrongE2;
+        double d = std::numeric_limits<double>::min();
+
+        // Busca a pior combinação de nós
+        for(auto e1: vec)
+        {
+            for(auto e2: vec)
+            {
+                if (e1 != e2)
+                {
+                    double e1Area = DimensionalRectangleAlgebra::RectangleArea(e1->mbr());
+                    double e2Area = DimensionalRectangleAlgebra::RectangleArea(e2->mbr());
+
+                    DimensionalRectangle2D* base = DimensionalRectangleAlgebra::DimensionAppend(e1->mbr(), e2->mbr());
+                    double dFor = DimensionalRectangleAlgebra::RectangleArea(base) - e1Area - e2Area;
+
+                    if (dFor > d)
+                    {
+                        d = dFor;
+                        wrongE1 = e1;
+                        wrongE2 = e2;
+                    }
+                }
+            }
+        }
+        
+        return std::vector<RNode*>({wrongE1, wrongE2});
     }
 };
 
