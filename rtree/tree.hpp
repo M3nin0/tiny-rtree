@@ -63,8 +63,18 @@ private:
 
 class RTree
 {
+
+// Construtores
 public:
-    RTree(std::size_t m, std::size_t M);
+    RTree(std::size_t m, std::size_t M, SplitStrategy* splitStrategy);
+
+public:
+    // ToDo: Método pode ser generalizado para que outro tipo
+    // de dado possa ser armazenado
+    void insert(Geometry* geom);
+
+private:
+    RNode* p_root;
 };
 
 #endif

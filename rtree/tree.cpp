@@ -4,6 +4,11 @@
 #include "tree.hpp"
 #include "geometry.hpp"
 
+RTree::RTree(std::size_t m, std::size_t M, SplitStrategy* splitStrategy)
+{
+    p_root = new RNode(m, M, splitStrategy);
+}
+
 RNode::RNode(std::size_t m, std::size_t M, SplitStrategy* splitStrategy)
     : p_m(m), p_M(M), p_splitStrategy(splitStrategy)
 {
@@ -93,4 +98,57 @@ std::vector<RNode*> RNode::children() const
 SplitStrategy* RNode::strategy() const
 {
     return p_splitStrategy;
+}
+
+/**
+ * Função auxiliar para a seleção do nó onde os novos elements serão inseridos
+ * 
+ * Os passos implementados nesta função, representam os passos { CL1, CL2, CL3 e CL4 }
+ * descrito no artigo de Guttman (1984).
+ */
+RNode* chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom)
+{
+    // N no parâmetro representa CL1
+    // CL2
+    if (N->isLeaf())
+        return N;
+
+    RNode* selectedNode = N;
+    // pega um elemento fora do domínio para começar
+    double maxGainArea = std::numeric_limits<double>::max(); 
+
+    // CL3 (Buscando o nó que possuí o menor crescimento do MBR)
+    for(auto node: N->children())
+    {
+        double areaGain = DimensionalRectangleAlgebra::AreaGain(node->mbr(), ngeom);
+
+        if ( areaGain < maxGainArea && !node->isLeaf() )
+        {
+            selectedNode = node;
+            maxGainArea = areaGain;
+        }
+
+        if (areaGain == maxGainArea && !node->isLeaf())
+        {
+            // caso seja igual, o problema será resolvido escolhendo o retângulo
+            // de menor área, como apresentado no CL3
+            double possibleNodeArea = DimensionalRectangleAlgebra::RectangleArea(node->mbr());
+            double actualNodeArea = DimensionalRectangleAlgebra::RectangleArea(selectedNode->mbr());
+
+            if (actualNodeArea > possibleNodeArea)
+            {
+                maxGainArea = areaGain;
+                selectedNode = node;
+            }
+        }
+    }
+
+    // Adicionado para verificar se o nó de entrada sofreu mudanças.
+    // Caso não tenha sofrido, indica que a busca está sendo feita no nível
+    // das folhas, assim, o elemento N (Superior) deve ser devolvido.
+    if (selectedNode == N)
+        return N;
+
+    // Realiza a operação até os nós folhas
+    return chooseLeaf(selectedNode, ngeom);
 }

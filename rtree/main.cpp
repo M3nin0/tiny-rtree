@@ -1,12 +1,14 @@
 #include <iostream>
-// #include "tiny.hpp"
+
 #include "tree.hpp"
+#include "split.hpp"
 #include "geometry.hpp"
 
 int main()
 {
     // Testando os primeiros passos da inserção
-    // RTree rTree(2, 4);
+    RTree rTree(2, 4, new LinearSplitStrategy());
+    
     // Os valores abaixo foram criados utilizando o programa rtree2.jnlp
     // junto ao código 'autortree.py'
     // rTree.insert(new BaseRectangle(588.0, 1371.0, 180.0, 617.0));
@@ -33,8 +35,6 @@ int main()
     // rTree.insert(new BaseRectangle(205.0, 289.0, 315.0, 383.0));
     // rTree.insert(new BaseRectangle(342.0, 516.0, 335.0, 453.0));
     // rTree.insert(new BaseRectangle(685.0, 867.0, 368.0, 536.0));
-
-
 
     // Os testes abaixo foram feitos inserido os retângulos
     // rTree.insert(new BaseRectangle(0, 3, 0, 5));
