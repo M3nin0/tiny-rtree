@@ -44,7 +44,7 @@ int main()
     rTree.insert(new Rectangle(3, 6, 0, 1));
     rTree.insert(new Rectangle(7, 16, 5, 51));
     rTree.insert(new Rectangle(14, 16, 51, 510));
-    
+
     // Adiciona geometria com o nó raiz cheio
     rTree.insert(new Rectangle(12, 13, 15, 21));
 

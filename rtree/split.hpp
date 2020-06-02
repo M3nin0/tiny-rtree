@@ -76,7 +76,7 @@ public:
      * DESCRIPTION: Método auxiliar para verificar se um elemento com uma certa referência
      * está presente no vector
      * 
-     * TODO: Melhorar
+     * TODO: Verificar necessidade
      */
     bool elementsIsInVector(std::vector<RNode*> vecx, RNode* el)
     {
@@ -86,6 +86,23 @@ public:
                 return true;
         }
         return false;
+    }
+
+    /**
+     * DESCRIPTION: Método auxiliar para remover os elementos selecionados como os iniciais dos 
+     * dois grupos durante o split, este método evita que há elementos duplicados na árvore
+     * 
+     * TODO: Verificar necessidade
+     */
+    void removeFromVector(std::vector<RNode*>& vecx, RNode* el)
+    {
+        std::size_t i;
+        for(i = 0; i < vecx.size(); ++i)
+        {
+            if (vecx.at(i) == el)
+                break;
+        }
+        vecx.erase(vecx.begin() + i);
     }
 
     virtual std::vector<RNode*> split_(RNode* L)
@@ -107,6 +124,10 @@ public:
 
         groupOne->addChild(wrongSeeds.at(0));
         groupTwo->addChild(wrongSeeds.at(1));
+
+        // Removendo os elementos para evitar duplicadas
+        removeFromVector(children, wrongSeeds.at(0));
+        removeFromVector(children, wrongSeeds.at(1));
 
         bool isFinish = false;
         while (!children.empty())
@@ -169,6 +190,8 @@ public:
                 }
             }
             // Insere no grupo selecionado com base nos critérios definidos no artigo
+            // ToDo: Rever a necessidade deste método, uma vez que os elementos duplicados são removidos
+            // no início
             if (!elementsIsInVector(selectedGroup->children(), nextEntry))
                 selectedGroup->addChild(nextEntry);
         }
@@ -199,7 +222,7 @@ private:
 
         for(auto node: vec)
         {
-            if (selectedHighestBassNAxis->mbr()->min(axis) < node->mbr()->min(0))
+            if (selectedHighestBassNAxis->mbr()->min(axis) < node->mbr()->min(axis))
                 selectedHighestBassNAxis = node;
         }
         return selectedHighestBassNAxis;
