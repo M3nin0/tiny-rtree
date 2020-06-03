@@ -117,7 +117,10 @@ public:
 
         // Cria os dois novos grupos (Nós folha)
         RNode* groupOne = L; // aponta para L, mantendo todas as suas características
-        RNode* groupTwo = new RNode(m, M, true, L->strategy());
+        // O Segundo nó foi criado com as mesmas características do primeiro. Isso foi feito
+        // uma vez que foi percebido que, o lado que tinha o isLeaf correto crescia sem problemas
+        // enquanto o lado do groupTwo sempre dava problemas na estrutura
+        RNode* groupTwo = new RNode(m, M, L->isLeaf(), L->strategy());
         
         // Encontrando o pior par para separar eles    
         std::vector<RNode*> wrongSeeds = pickSeeds(children);
@@ -129,29 +132,23 @@ public:
         removeFromVector(children, wrongSeeds.at(0));
         removeFromVector(children, wrongSeeds.at(1));
 
-        bool isFinish = false;
+        // bool isFinish = false;
         while (!children.empty())
         {
-            // QS2 (Verificando se acabou)
-            for(auto group: {groupOne, groupTwo})
+            // QS2 (Verificando se todos os grupos tem a quantidade mínima)
+            // Os loops foram substituídos por essa verificação 'inline' que consome menos recurso
+            // e aproveita o loop superior. Na versão original o for fazia passos desnecessários aqui.
+            if ((groupOne->children().size() + children.size()) <= m)
             {
-                // Verificando se algum dos grupos pode ficar sem a quantidade mínima de
-                // elementos necessárias pela definição da árvore
-                // "A quantidade de nós atuais no grupo consegue alcançar o mínimo quando somada
-                // a quantidade de elementos que estão disponíveis para utilização"
-                std::size_t elSize = (group->children().size() + children.size());
-                if (elSize <= m)
-                {
-                    for(std::size_t inode = 0; group->children().size() < m; ++inode)
-                    {
-                        group->addChild(children.at(inode));
-                        children.erase(children.begin() + inode);
-                    }
-                    isFinish = true;
-                }
+                groupOne->addChild(children.at(0));
+                children.erase(children.begin());
+                continue;
+            } else if ((groupTwo->children().size() + children.size()) <= m)
+            {
+                groupTwo->addChild(children.at(0));
+                children.erase(children.begin());
+                continue;
             }
-            if (isFinish)
-                return std::vector<RNode*> ({ groupOne, groupTwo });
 
             // QS3 (Seleciona entrada para atribuir)
             RNode* nextEntry = pickNext(children, groupOne, groupTwo);

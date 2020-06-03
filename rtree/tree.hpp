@@ -71,7 +71,7 @@ public:
 
 // Métodos para o controle da estrutura da árvore
 public:
-    static void adjustTree(RNode* root, RNode* N, RNode* NN);
+    static RNode* adjustTree(RNode* root, RNode* N, RNode* NN);
     static RNode* chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom);
 
 public:

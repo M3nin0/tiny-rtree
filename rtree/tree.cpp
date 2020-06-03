@@ -31,6 +31,11 @@ void RNode::addMBR(DimensionalRectangle2D* mbr)
     p_mbr = mbr;
 }
 
+void RNode::addParent(RNode* parent)
+{
+    p_parent = parent;
+}
+
 DimensionalRectangle2D* RNode::mbr() const
 {
     if (p_isLeaf)
@@ -81,7 +86,7 @@ void RNode::setIsLeaf(bool isLeaf)
 
 bool RNode::isFullOfChildren() const
 {
-    return p_children.size() >= p_M;
+    return p_children.size() == p_M;
 }
 
 void RNode::addChild(RNode* child)
@@ -121,7 +126,7 @@ RNode* RNode::parent() const
  * DESCRIPTION: Função auxiliar para a seleção do nó onde os novos elements serão inseridos
  * 
  * OBSERVATION: Os passos implementados nesta função, representam os passos { CL1, CL2, CL3 e CL4 }
- * descrito no artigo de Guttman (1984).
+ * descrito no artigo de Guttman (1984). 
  */
 RNode* RTree::chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom)
 {
@@ -130,7 +135,8 @@ RNode* RTree::chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom)
     if (N->isLeaf())
         return N;
 
-    RNode* selectedNode = N;
+    // Precisa ser nulo, na versão original era selectedNode = N (O que gerou problemas e 'ifs' extras)
+    RNode* selectedNode = nullptr;
     // pega um elemento fora do domínio para começar
     double maxGainArea = std::numeric_limits<double>::max(); 
 
@@ -139,13 +145,7 @@ RNode* RTree::chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom)
     {
         double areaGain = DimensionalRectangleAlgebra::AreaGain(node->mbr(), ngeom);
 
-        if ( areaGain < maxGainArea && !node->isLeaf() )
-        {
-            selectedNode = node;
-            maxGainArea = areaGain;
-        }
-
-        if (areaGain == maxGainArea && !node->isLeaf())
+        if (areaGain == maxGainArea)
         {
             // caso seja igual, o problema será resolvido escolhendo o retângulo
             // de menor área, como apresentado no CL3
@@ -158,44 +158,54 @@ RNode* RTree::chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom)
                 selectedNode = node;
             }
         }
-    }
 
-    // Adicionado para verificar se o nó de entrada sofreu mudanças.
-    // Caso não tenha sofrido, indica que a busca está sendo feita no nível
-    // das folhas, assim, o elemento N (Superior) deve ser devolvido.
-    if (selectedNode == N)
-        return N;
+        if ( areaGain < maxGainArea)
+        {
+            selectedNode = node;
+            maxGainArea = areaGain;
+        }
+    }
 
     // Realiza a operação até os nós folhas
     return chooseLeaf(selectedNode, ngeom);
 }
 
 /**
+ * DESCRIPTION: Função auxiliar para o ajuste da estrutura da árvore após uma inserção (Com ou sem split)
  * 
+ * OBSERVATION: Implementação do algoritmo de ajuste (Bottom-Up) proposto por Guttman (1984). Na lógica original do artigo, ao que parece, esta função não precisa
+ * retornar nenhum valor, porém, seguindo a estrutura de implementação deste código, inicialmente nenhum valor era retornado
+ * o que causava problemas de perdas dos nós, uma vez que o split era realizado e então não era adicionado ao
+ * nó final
  */
-void RTree::adjustTree(RNode* root, RNode* N, RNode* NN)
+RNode* RTree::adjustTree(RNode* root, RNode* N, RNode* NN)
 {
     if(N == root)
-        return;
+        return NN;
 
-    RNode* pParent = N->parent();
-    pParent->updateMBR_();
+    RNode* p = N->parent();
+    p->updateMBR_();
+    RNode* pp = nullptr;
 
     if (NN != nullptr)
     {
         // Se o pai não estiver cheio de filhos, adiciona o NN
-        if (!pParent->isFullOfChildren())
-        {
-            pParent->addChild(NN);
-            adjustTree(root, pParent, nullptr); // Não tem divisão, NN = nullprt
-        }
+        if (!p->isFullOfChildren())
+            p->addChild(NN);
+            // Aqui só o P é considerado, PP vai entrar no adjustTree como null
         else
         {
             // Para o split, a estratégia presente no nó é utilizada
-            std::vector<RNode*> PAndPP = root->p_splitStrategy->split(pParent);
-            adjustTree(root, PAndPP.at(0), PAndPP.at(1));
+            p->addChild(NN);
+            std::vector<RNode*> PAndPP = root->p_splitStrategy->split(p);
+
+            // salva os resultados em P e PP para que o adjustTree seja utilizado
+            p = PAndPP.at(0);
+            pp = PAndPP.at(1);
         }
     }
+    return adjustTree(root, p, pp); // É necessário para que, em qualquer caso (Com ou sem split)
+                                    // o ajuste da árvore seja realizado
 }
 
 /**
@@ -205,32 +215,25 @@ void RTree::adjustTree(RNode* root, RNode* N, RNode* NN)
  */
 RNode* RNode::insert_(RNode* nn)
 {
+    RNode* secondNode = nullptr;
     RNode* L = RTree::chooseLeaf(this, nn->mbr());
 
     // Se está cheio não pode inserir NN, precisa realizar a operação de split
     if (L->isFullOfChildren())
     {
         L->addChild(nn);
-
         std::vector<RNode*> LAndLL = p_splitStrategy->split(L);
-        RTree::adjustTree(this, LAndLL.at(0), LAndLL.at(1));
-        
-        LAndLL.at(0)->setIsLeaf(LAndLL.at(0)->p_children.empty());
-        LAndLL.at(1)->setIsLeaf(LAndLL.at(1)->p_children.empty());
-
-        // Caso particular da raiz
-        // Se for raiz, então, uma divisão é realizada
-        if (L == this)
-        {
-            RNode* newRoot = new RNode(p_m, p_M, false, this->p_splitStrategy); 
-            newRoot->addChild(LAndLL.at(0));
-            newRoot->addChild(LAndLL.at(1));
-
-            return newRoot;
-        }
+        secondNode = RTree::adjustTree(this, LAndLL.at(0), LAndLL.at(1));
     } else
-    {
         L->addChild(nn);
-    }
+
+    if (secondNode != nullptr)
+    {
+        RNode* newRoot = new RNode(p_m, p_M, false, this->p_splitStrategy); 
+        newRoot->addChild(this);
+        newRoot->addChild(secondNode);
+        return newRoot;
+    } 
+    // Retorna o RNode somente com a modificação de adição do nn
     return this;
 }
