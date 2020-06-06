@@ -321,7 +321,6 @@ RNode* RNode::insert_(RNode* nn)
     // Se está cheio não pode inserir NN, precisa realizar a operação de split
     if (L->isFullOfChildren())
     {
-        std::cout << "Dentro da função insert, dentro da condicional que está cheio de filhos" << std::endl;
         L->addChildren(nn);
 
         std::vector<RNode*> LAndLL = quadraticSplit_(L);
@@ -341,13 +340,10 @@ RNode* RNode::insert_(RNode* nn)
             newRoot->addChildren(LAndLL.at(0));
             newRoot->addChildren(LAndLL.at(1));
 
-            std::cout << "Uma divisão na raiz ocorreu" << std::endl;
-
             return newRoot;
         }
     } else
     {
-        std::cout << "Dentro da função insert, não está cheio, inseriu: " << nn << std::endl;
         L->addChildren(nn);
     }
     return this;
@@ -360,25 +356,25 @@ void RNode::search_(RNode* root, BaseRectangle* rect, std::vector<RNode*>& overs
 {
     if(root->isLeaf()) // é folha, então nenhum dos elementos vector tem ponteiro pra filho, todos eles só têm entradas
     {
-        std::cout << "Dentro da funcao search_: o no e folha, vou verificar os elementos do vector dele" << std::endl;
-        for(std::size_t i=0; i<root->p_children.size(); ++i) // acessando as entradas
+        std::cout << "A raiz e folha: imprimindo os elementos do vector" << std::endl;
+        for(std::size_t i=0; i<root->p_children.size(); ++i) // vou passar por todos os elementos do vector e imprimir o mbr de cada um
         {
             if(Overslaps(root->p_children.at(i)->mbr(), rect)) // vendo se os retângulos das entradas sobrepõem o que eu to buscando
                 overslaps_.push_back(root->p_children.at(i)); // se sim, adiciona num vector pra armazenar
         }
-        return;
     }
     else // não é folha, então pelo menos um dos elementos do vector tem ponteiro pra filho
     {
-        std::cout << "Dentro da funcao search_: o no nao e folha, vou pras subarvores" << std::endl;
-        for(std::size_t i=0; i<root->p_children.size(); ++i) // passo por todos mandando suas subarvores pra search_ de novo
+        for(auto node: root->p_children)
         {
-            return(search_(root->p_children.at(i),rect,overslaps_)); // to com uma duvida aqui
-            // se um desses p_children.at(i) nao tiver filhos, ele ainda entra na função search_ e então é considerado folha no primeiro if, certo?
-            // pq se nao for, é isso que ta dando erro, provavelmente
+            for(std::size_t i=0; i<root->p_children.size(); ++i) // vou passar por todos os elementos do vector e imprimir o mbr de cada um
+            {
+                if(Overslaps(root->p_children.at(i)->mbr(), rect)) // vendo se os retângulos das entradas sobrepõem o que eu to buscando
+                overslaps_.push_back(root->p_children.at(i)); // se sim, adiciona num vector pra armazenar
+            }
         }
     }
-    
+  
 }
 
 // Função para imprimir a árvore (no caso so os retângulos que estão sendo inseridos mesmo)
@@ -386,7 +382,7 @@ void RNode::print_(RNode* N) // mesmo raciocínio aqui
 {
     if(N->isLeaf()) // se for folha
     {
-        std::cout << "O no e folha: imprimindo os elementos do vector" << std::endl;
+        std::cout << "A raiz e folha: imprimindo os elementos do vector" << std::endl;
         for(std::size_t i=0; i<N->p_children.size(); ++i) // vou passar por todos os elementos do vector e imprimir o mbr de cada um
         {
             std::cout << N->p_children.at(i)->mbr()->xmin() << "\t";
@@ -398,10 +394,15 @@ void RNode::print_(RNode* N) // mesmo raciocínio aqui
     }
     else // se não for folha
     {
-        for(std::size_t i=0; i<N->p_children.size(); ++i) // então eu verifico a subárvore de cada um
+        for(auto node: N->p_children)
         {
-            return(print_(N->p_children.at(i))); // aqui tenho a mesma dúvida da função search_
-            // pq ele entra, vai ate a folha (como mostram as impressões de teste std::cout), mas quando chega la parece que nao tem nada
+            for(std::size_t i=0; i<N->p_children.size(); ++i) // vou passar por todos os elementos do vector e imprimir o mbr de cada um
+            {
+                std::cout << N->p_children.at(i)->mbr()->xmin() << "\t";
+                std::cout << N->p_children.at(i)->mbr()->xmax() << "\t";
+                std::cout << N->p_children.at(i)->mbr()->ymin() << "\t";
+                std::cout << N->p_children.at(i)->mbr()->ymax() << std::endl;
+            }
         }
     }  
 }
@@ -416,17 +417,24 @@ RTree::RTree(std::size_t m, std::size_t M)
     root->setIsLeaf(true);
 }
 
+void RTree::insert(BaseRectangle* rect)
+{
+    RNode* nn = new RNode(p_m, p_M, nullptr, true);
+    nn->addMBR(rect);
+
+    root = root->insert_(nn);
+}
+
 void RTree::search(BaseRectangle* rect)
 {
     std::cout << "Dentro da funcao search" << std::endl;
     std::vector<RNode*> teste;
     root->search_(root, rect, teste);
     for(std::size_t i=0; i<teste.size(); ++i)
-        std::cout << "Vetor de endereços que retorna da função search_: " << &teste.at(i) << std::endl; //não chegou a imprimir isso quando chamei a search na main
+        std::cout << "Endereço que retorna da função search_: " << &teste.at(i) << std::endl; //não chegou a imprimir isso quando chamei a search na main
 }
 
 void RTree::print()
 {
-    std::cout << "Dentro da funcao print da RTree" << std::endl;
     root->print_(root);
 }
