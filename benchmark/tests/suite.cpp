@@ -23,7 +23,7 @@ void printTimeLog(std::chrono::time_point<std::chrono::high_resolution_clock> st
 int main()
 {
     { // Utilizando o ciclo de vida de objetos em C++
-        std::cout << "C1 - Construção da árvore com 10 elementos" << std::endl;
+        std::cout << "C1 - Construção da árvore com 10 elementos - RTree(2, 4)" << std::endl;
 
         auto start = std::chrono::high_resolution_clock::now();
 
@@ -49,7 +49,7 @@ int main()
     }
 
     { 
-        std::cout << "C2 - Construção da árvore com 50 elementos" << std::endl;
+        std::cout << "C2 - Construção da árvore com 50 elementos - RTree(2, 4)" << std::endl;
         auto start = std::chrono::high_resolution_clock::now();
 
         RTree rTree(2, 4, new QuadraticSplitStrategy());
@@ -110,11 +110,10 @@ int main()
     }
 
     { 
-        std::cout << "C3 - Construção da árvore com 124 elementos" << std::endl;
+        std::cout << "C3 - Construção da árvore com 124 elementos - RTree(2, 4)" << std::endl;
         auto start = std::chrono::high_resolution_clock::now();
 
         RTree rTree(2, 4, new QuadraticSplitStrategy());
-
         rTree.insert(new Rectangle(0.0, 40.0, 0.0, 35.0));
         rTree.insert(new Rectangle(10.0, 45.0, 210.0, 230.0));
         rTree.insert(new Rectangle(170.0, 200.0, 50.0, 150.0));
@@ -185,64 +184,11 @@ int main()
         rTree.insert(new Rectangle(492.0, 514.0, 472.0, 487.0));
         rTree.insert(new Rectangle(445.0, 446.0, 474.0, 478.0));
         rTree.insert(new Rectangle(354.0, 363.0, 476.0, 482.0));
-        rTree.insert(new Rectangle(270.0, 293.0, 461.0, 482.0));
-        rTree.insert(new Rectangle(191.0, 203.0, 446.0, 461.0));
-        rTree.insert(new Rectangle(133.0, 138.0, 447.0, 454.0));
-        rTree.insert(new Rectangle(478.0, 542.0, 375.0, 402.0));
-        rTree.insert(new Rectangle(607.0, 638.0, 341.0, 355.0));
-        rTree.insert(new Rectangle(711.0, 742.0, 287.0, 303.0));
-        rTree.insert(new Rectangle(781.0, 819.0, 232.0, 251.0));
-        rTree.insert(new Rectangle(859.0, 891.0, 159.0, 166.0));
-        rTree.insert(new Rectangle(903.0, 914.0, 95.0, 99.0));
-        rTree.insert(new Rectangle(928.0, 952.0, 69.0, 87.0));
-        rTree.insert(new Rectangle(880.0, 893.0, 45.0, 76.0));
-        rTree.insert(new Rectangle(798.0, 808.0, 84.0, 105.0));
-        rTree.insert(new Rectangle(733.0, 747.0, 94.0, 103.0));
-        rTree.insert(new Rectangle(694.0, 746.0, 117.0, 161.0));
-        rTree.insert(new Rectangle(569.0, 577.0, 247.0, 260.0));
-        rTree.insert(new Rectangle(446.0, 468.0, 249.0, 264.0));
-        rTree.insert(new Rectangle(415.0, 443.0, 192.0, 213.0));
-        rTree.insert(new Rectangle(442.0, 465.0, 188.0, 203.0));
-        rTree.insert(new Rectangle(342.0, 364.0, 110.0, 128.0));
-        rTree.insert(new Rectangle(273.0, 287.0, 55.0, 64.0));
-        rTree.insert(new Rectangle(200.0, 237.0, 25.0, 50.0));
-        rTree.insert(new Rectangle(191.0, 225.0, 67.0, 110.0));
-        rTree.insert(new Rectangle(233.0, 254.0, 199.0, 228.0));
-        rTree.insert(new Rectangle(149.0, 157.0, 312.0, 334.0));
-        rTree.insert(new Rectangle(96.0, 99.0, 337.0, 361.0));
-        rTree.insert(new Rectangle(60.0, 65.0, 375.0, 404.0));
-        rTree.insert(new Rectangle(55.0, 135.0, 406.0, 460.0));
-        rTree.insert(new Rectangle(128.0, 167.0, 460.0, 480.0));
-        rTree.insert(new Rectangle(325.0, 400.0, 179.0, 217.0));
-        rTree.insert(new Rectangle(440.0, 476.0, 200.0, 231.0));
-        rTree.insert(new Rectangle(502.0, 523.0, 238.0, 281.0));
-        rTree.insert(new Rectangle(558.0, 578.0, 297.0, 312.0));
-        rTree.insert(new Rectangle(621.0, 649.0, 325.0, 338.0));
-        rTree.insert(new Rectangle(687.0, 712.0, 357.0, 368.0));
-        rTree.insert(new Rectangle(747.0, 778.0, 377.0, 389.0));
-        rTree.insert(new Rectangle(819.0, 838.0, 401.0, 412.0));
-        rTree.insert(new Rectangle(890.0, 995.0, 427.0, 463.0));
-        rTree.insert(new Rectangle(990.0, 1013.0, 126.0, 146.0));
-        rTree.insert(new Rectangle(1000.0, 1017.0, 101.0, 116.0));
-        rTree.insert(new Rectangle(1010.0, 1043.0, 67.0, 84.0));
-        rTree.insert(new Rectangle(1019.0, 1046.0, 52.0, 70.0));
-        rTree.insert(new Rectangle(1009.0, 1036.0, 321.0, 336.0));
-        rTree.insert(new Rectangle(1011.0, 1029.0, 325.0, 357.0));
-        rTree.insert(new Rectangle(962.0, 992.0, 294.0, 348.0));
-        rTree.insert(new Rectangle(838.0, 884.0, 318.0, 362.0));
-        rTree.insert(new Rectangle(802.0, 841.0, 304.0, 337.0));
-        rTree.insert(new Rectangle(744.0, 804.0, 295.0, 327.0));
-        rTree.insert(new Rectangle(682.0, 745.0, 273.0, 321.0));
-        rTree.insert(new Rectangle(631.0, 676.0, 268.0, 309.0));
-        rTree.insert(new Rectangle(572.0, 619.0, 252.0, 284.0));
-        rTree.insert(new Rectangle(553.0, 644.0, 211.0, 260.0));
-        rTree.insert(new Rectangle(581.0, 672.0, 199.0, 268.0));
-        rTree.insert(new Rectangle(512.0, 602.0, 169.0, 221.0));
-        rTree.insert(new Rectangle(454.0, 572.0, 127.0, 182.0));
 
         auto end = std::chrono::high_resolution_clock::now();
         printTimeLog(start, end);
     }
+
 
     return 0;
 }

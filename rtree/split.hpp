@@ -73,22 +73,6 @@ class GuttmanMethod: public SplitStrategy
 {
 public:
     /**
-     * DESCRIPTION: Método auxiliar para verificar se um elemento com uma certa referência
-     * está presente no vector
-     * 
-     * TODO: Verificar necessidade
-     */
-    bool elementsIsInVector(std::vector<RNode*> vecx, RNode* el)
-    {
-        for(auto vEl: vecx)
-        {
-            if (vEl == el)
-                return true;
-        }
-        return false;
-    }
-
-    /**
      * DESCRIPTION: Método auxiliar para remover os elementos selecionados como os iniciais dos 
      * dois grupos durante o split, este método evita que há elementos duplicados na árvore
      * 
@@ -186,13 +170,9 @@ public:
                         selectedGroup = groupTwo;
                 }
             }
-            // Insere no grupo selecionado com base nos critérios definidos no artigo
-            // ToDo: Rever a necessidade deste método, uma vez que os elementos duplicados são removidos
-            // no início
-            if (!elementsIsInVector(selectedGroup->children(), nextEntry))
-                selectedGroup->addChild(nextEntry);
+            // Insere no grupo selecionado
+            selectedGroup->addChild(nextEntry);
         }
-
         return std::vector<RNode*> ({ groupOne, groupTwo });
     }
 };
@@ -342,29 +322,27 @@ private:
         double d = std::numeric_limits<double>::min();
 
         // PS1 - Busca a pior combinação de nós
-        for(auto e1: vec)
+        for(std::size_t i = 0; i < vec.size(); ++i)        
         {
-            for(auto e2: vec)
+            auto e1 = vec.at(i);
+            for(std::size_t j = i + 1; j < vec.size(); ++j)
             {
-                if (e1 != e2)
+                auto e2 = vec.at(j);
+                double e1Area = DimensionalRectangleAlgebra::RectangleArea(e1->mbr());
+                double e2Area = DimensionalRectangleAlgebra::RectangleArea(e2->mbr());
+
+                DimensionalRectangle2D* base = DimensionalRectangleAlgebra::DimensionAppend(e1->mbr(), e2->mbr());
+                double dFor = DimensionalRectangleAlgebra::RectangleArea(base) - e1Area - e2Area;
+
+                // PS2 - Escolhendo o pior par
+                if (dFor > d)
                 {
-                    double e1Area = DimensionalRectangleAlgebra::RectangleArea(e1->mbr());
-                    double e2Area = DimensionalRectangleAlgebra::RectangleArea(e2->mbr());
-
-                    DimensionalRectangle2D* base = DimensionalRectangleAlgebra::DimensionAppend(e1->mbr(), e2->mbr());
-                    double dFor = DimensionalRectangleAlgebra::RectangleArea(base) - e1Area - e2Area;
-
-                    // PS2 - Escolhendo o pior par
-                    if (dFor > d)
-                    {
-                        d = dFor;
-                        wrongE1 = e1;
-                        wrongE2 = e2;
-                    }
+                    d = dFor;
+                    wrongE1 = e1;
+                    wrongE2 = e2;
                 }
             }
         }
-        
         return std::vector<RNode*>({wrongE1, wrongE2});
     }
 };

@@ -38,35 +38,12 @@ void RNode::addParent(RNode* parent)
 
 DimensionalRectangle2D* RNode::mbr() const
 {
-    if (p_isLeaf)
-        return p_mbr;
-
-    std::vector<double> xs;
-    std::vector<double> ys;
-
-    for(auto node: p_children)
-    {
-        xs.push_back(node->mbr()->min(0)); // x
-        ys.push_back(node->mbr()->min(1)); // y
-        xs.push_back(node->mbr()->max(0)); // x
-        ys.push_back(node->mbr()->max(1)); // y
-    }
-
-    // Seleciona as maiores e menores coordenadas
-    double xmin = *std::min_element(xs.begin(), xs.end());
-    double xmax = *std::max_element(xs.begin(), xs.end());
-    double ymin = *std::min_element(ys.begin(), ys.end());
-    double ymax = *std::max_element(ys.begin(), ys.end());
-
-    return new DimensionalRectangle2D(
-        xmin, xmax, ymin, ymax
-    );
+    return p_mbr;
 }
 
 void RNode::updateMBR_()
 {
     DimensionalRectangle2D* base = p_children.at(0)->mbr();
-
     for(std::size_t i = 0; i < p_children.size(); ++i)
     {
         base = DimensionalRectangleAlgebra::DimensionAppend(base, p_children.at(i)->mbr());
@@ -184,8 +161,11 @@ RNode* RTree::adjustTree(RNode* root, RNode* N, RNode* NN)
         return NN;
 
     RNode* p = N->parent();
-    p->updateMBR_();
     RNode* pp = nullptr;
+    
+    // AT3. Para cada filho em p, fazer sua atualização
+    for(auto ppt: p->p_children)
+        ppt->updateMBR_();
 
     if (NN != nullptr)
     {
@@ -204,8 +184,8 @@ RNode* RTree::adjustTree(RNode* root, RNode* N, RNode* NN)
             pp = PAndPP.at(1);
         }
     }
-    return adjustTree(root, p, pp); // É necessário para que, em qualquer caso (Com ou sem split)
-                                    // o ajuste da árvore seja realizado
+    // AT4. Propaga a divisão dos nós para cima
+    return adjustTree(root, p, pp); 
 }
 
 /**
@@ -219,14 +199,19 @@ RNode* RNode::insert_(RNode* nn)
     RNode* L = RTree::chooseLeaf(this, nn->mbr());
 
     // Se está cheio não pode inserir NN, precisa realizar a operação de split
+    // Os dois casos chamam o "adjustTree", isto é feito para que os elementos alterados
+    // tenham seu MBR atualizado.
     if (L->isFullOfChildren())
     {
         L->addChild(nn);
         std::vector<RNode*> LAndLL = p_splitStrategy->split(L);
         secondNode = RTree::adjustTree(this, LAndLL.at(0), LAndLL.at(1));
     } else
+    {
         L->addChild(nn);
-
+        secondNode = RTree::adjustTree(this, L, nullptr);
+    }
+    
     if (secondNode != nullptr)
     {
         RNode* newRoot = new RNode(p_m, p_M, false, this->p_splitStrategy); 
@@ -234,6 +219,6 @@ RNode* RNode::insert_(RNode* nn)
         newRoot->addChild(secondNode);
         return newRoot;
     } 
-    // Retorna o RNode somente com a modificação de adição do nn
+
     return this;
 }
