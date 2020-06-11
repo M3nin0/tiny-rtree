@@ -36,6 +36,11 @@ public:
     static double AreaGain(DimensionalRectangle2D* actualSpace, DimensionalRectangle2D* newReact);
     
     /**
+     * DESCRIPTION: Método para verificar se dois retângulos se sobrepõem.
+     */
+    static int Overslaps(DimensionalRectangle2D* rect1, DimensionalRectangle2D* rect2);
+
+    /**
      * DESCRIPTION: Método para juntar duas dimensões retangulares
      */
     static DimensionalRectangle2D* DimensionAppend(DimensionalRectangle2D* dim1, DimensionalRectangle2D* dim2);

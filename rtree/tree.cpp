@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <iostream>
 #include <algorithm>
 
 #include "SplitStrategy.hpp"
@@ -257,6 +258,54 @@ int RTree::count(RNode *root) const
         result += count(root->children().at(i));
     }
     return result;
+}
+
+
+/**
+ * DESCRIPTION: Método para buscar os retângulos que sobrepõem o retângulo em questão
+ */
+RNode* RNode::search_(RNode* root, DimensionalRectangle2D* geom, std::vector<RNode*>& overslaps_)
+{
+    if(root->isLeaf())
+    {
+        for(std::size_t i=0; i<root->children().size(); ++i) // vou passar por todos os elementos do vector e imprimir o mbr de cada um
+        {
+            if(DimensionalRectangleAlgebra::Overslaps(root->children().at(i)->mbr(), geom)) // vendo se os retângulos das entradas sobrepõem o que eu to buscando
+                overslaps_.push_back(root->children().at(i)); // se sim, adiciona num vector pra armazenar
+        }
+    }
+    for(std::size_t i=0; i<root->children().size(); ++i)
+        return search_(root->children().at(i), geom, overslaps_); 
+}
+
+/**
+ * DESCRIPTION: Mecanismo para imprimir os nós da árvore
+ */
+void RNode::print_(RNode* root)
+{
+    if(root->isLeaf())
+    {
+        for(std::size_t i=0; i<root->children().size(); ++i)
+        {
+            std::cout << root->children().at(i)->mbr()->min(0) << "\t";
+            std::cout << root->children().at(i)->mbr()->max(0) << "\t";
+            std::cout << root->children().at(i)->mbr()->min(1) << "\t";
+            std::cout << root->children().at(i)->mbr()->max(1) << std::endl;
+        }
+    }
+    else
+    {
+        for(auto node: root->children())
+        {
+            for(std::size_t i=0; i<root->children().size(); ++i) // vou passar por todos os elementos do vector e imprimir o mbr de cada um
+            {
+                std::cout << root->children().at(i)->mbr()->min(0) << "\t";
+                std::cout << root->children().at(i)->mbr()->max(0) << "\t";
+                std::cout << root->children().at(i)->mbr()->min(1) << "\t";
+                std::cout << root->children().at(i)->mbr()->max(1) << std::endl;
+            }
+        }  
+    }
 }
 
 /**
