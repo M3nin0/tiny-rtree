@@ -43,6 +43,7 @@ public:
 
 // Características do nó
 private:
+    std::size_t p_height;
     std::size_t p_m, p_M;
     bool p_isLeaf;
     SplitStrategy* p_splitStrategy;
@@ -75,8 +76,9 @@ public:
     static RNode* chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom);
 
 public:
+    std::size_t count() const;
+    std::size_t height() const;
     void insert(Geometry* geom);
-    int count() const;
 
 private:
     int count(RNode* root) const;

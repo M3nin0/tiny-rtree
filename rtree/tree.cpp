@@ -10,6 +10,7 @@ RTree::RTree(std::size_t m, std::size_t M, SplitStrategy* splitStrategy)
     : p_m(m), p_M(M)
 {
     p_root = new RNode(m, M, true, splitStrategy);
+    p_root->p_height = 0; // Só para a raiz que isso é válido
 }
 
 void RTree::insert(Geometry* geom)
@@ -221,10 +222,16 @@ RNode* RNode::insert_(RNode* nn)
     if (secondNode != nullptr)
     {
         RNode* newRoot = new RNode(p_m, p_M, false, this->p_splitStrategy); 
+        // Com o entendimento do funcionamento percebi que a cada split que ocorre na raiz
+        // o nível da árvore aumenta. Então, para controlar sua altura o que fiz foi, toda vez
+        // que o split chega na raiz é contado 1, indicando que a altura da árvore subiu.
+        // Fiz os testes e parece estar consistente.
+        newRoot->p_height = this->p_height + 1;
+
         newRoot->addChild(this);
         newRoot->addChild(secondNode);
         return newRoot;
-    } 
+    }
 
     return this;
 }
@@ -255,7 +262,15 @@ int RTree::count(RNode *root) const
 /**
  * DESCRIPTION: Função para contar a quantidade de elementos que está disponível na árvore.
  */
-int RTree::count() const
+std::size_t RTree::count() const
 {
     return count(p_root);
+}
+
+/**
+ * DESCRIPTION: Altura da árvore
+ */
+std::size_t RTree::height() const
+{
+    return p_root->p_height;
 }
