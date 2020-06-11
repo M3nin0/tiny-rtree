@@ -58,7 +58,6 @@ private:
     void updateMBR_();
     void print_(RNode* root);
     RNode* insert_(RNode* nn);
-    RNode* search_(RNode* root, DimensionalRectangle2D* geom, std::vector<RNode*>& overslaps_);
 };
 
 /**
@@ -81,11 +80,12 @@ public:
     void print() const;
     std::size_t count() const;
     std::size_t height() const;
-    void search(Geometry* geom);
     void insert(Geometry* geom);
+    std::vector<RNode*> search(Geometry* geom) const;
 
 private:
     int count(RNode* root) const;
+    void search_(RNode* root, DimensionalRectangle2D* geom, std::vector<RNode*>& overslaps_) const;
 
 private:
     RNode *p_root;

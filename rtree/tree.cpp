@@ -264,18 +264,39 @@ int RTree::count(RNode *root) const
 /**
  * DESCRIPTION: Método para buscar os retângulos que sobrepõem o retângulo em questão
  */
-RNode* RNode::search_(RNode* root, DimensionalRectangle2D* geom, std::vector<RNode*>& overslaps_)
+void RTree::search_(RNode* root, DimensionalRectangle2D* geom, std::vector<RNode*>& overslaps_) const
 {
+    // S2. Busca nos nós folha (Buscando nos conteúdos)
     if(root->isLeaf())
     {
-        for(std::size_t i=0; i<root->children().size(); ++i) // vou passar por todos os elementos do vector e imprimir o mbr de cada um
+        for(std::size_t i = 0; i < root->children().size(); ++i) // vou passar por todos os elementos do vector e imprimir o mbr de cada um
         {
             if(DimensionalRectangleAlgebra::Overslaps(root->children().at(i)->mbr(), geom)) // vendo se os retângulos das entradas sobrepõem o que eu to buscando
                 overslaps_.push_back(root->children().at(i)); // se sim, adiciona num vector pra armazenar
         }
     }
-    for(std::size_t i=0; i<root->children().size(); ++i)
-        return search_(root->children().at(i), geom, overslaps_); 
+    // S1. Busca nas subárvores (Buscando nos intermediários)
+    // Se não é uma folha, verifica cada uma das entradas do nó e determina se este sobrepõe S
+    else
+    {
+        for(auto node: root->children())
+        {
+            // Para todas as entradas que sobrepoe S, chama o search
+            if (DimensionalRectangleAlgebra::Overslaps(node->mbr(), geom))
+                search_(node, geom, overslaps_);
+        }
+    }
+    // Da forma abaixo, acredito que todos os elementos estavam sendo verificandos
+    // for(std::size_t i=0; i<root->children().size(); ++i)
+    //     return search_(root->children().at(i), geom, overslaps_); 
+}
+
+std::vector<RNode*> RTree::search(Geometry* geom) const
+{
+    std::vector<RNode*> result;
+    search_(p_root, geom->mbr(), result);
+
+    return result;
 }
 
 /**
@@ -283,7 +304,7 @@ RNode* RNode::search_(RNode* root, DimensionalRectangle2D* geom, std::vector<RNo
  */
 void RNode::print_(RNode* root)
 {
-    if(root->isLeaf())
+    if(root->isLeaf()) // Se é folha busca só nos elementos  (Buscando nos conteúdos)
     {
         for(std::size_t i=0; i<root->children().size(); ++i)
         {
@@ -295,9 +316,11 @@ void RNode::print_(RNode* root)
     }
     else
     {
-        for(auto node: root->children())
+        // (Buscando nos intermediários)
+        for(auto node: root->children()) // node -> sem uso
         {
-            for(std::size_t i=0; i<root->children().size(); ++i) // vou passar por todos os elementos do vector e imprimir o mbr de cada um
+            // vou passar por todos os elementos do vector e imprimir o mbr de cada um
+            for(std::size_t i = 0; i<root->children().size(); ++i) 
             {
                 std::cout << root->children().at(i)->mbr()->min(0) << "\t";
                 std::cout << root->children().at(i)->mbr()->max(0) << "\t";
