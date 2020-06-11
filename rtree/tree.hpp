@@ -75,13 +75,14 @@ public:
     static RNode* chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom);
 
 public:
-    // ToDo: Método pode ser generalizado para que outro tipo
-    // de dado possa ser armazenado
     void insert(Geometry* geom);
+    int count() const;
 
 private:
-    RNode* p_root;
+    int count(RNode* root) const;
 
+private:
+    RNode *p_root;
     std::size_t p_m, p_M;
 };
 

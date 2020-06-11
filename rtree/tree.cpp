@@ -222,3 +222,34 @@ RNode* RNode::insert_(RNode* nn)
 
     return this;
 }
+
+/**
+ * DESCRIPTION: Mecanismo para contar a quantidade de elementos que está disponível na árvore.
+ */
+int RTree::count(RNode *root) const
+{
+    if (root->isLeaf()) // Ponto de parada da recursão
+    {
+        int elementsInLeaf = 0;
+        for(std::size_t i = 0; i < root->children().size(); ++i)
+        {
+            elementsInLeaf += 1;
+        }
+        return elementsInLeaf;
+    }
+
+    int result = 0;
+    for(std::size_t i = 0; i < root->children().size(); ++i)
+    {
+        result += count(root->children().at(i));
+    }
+    return result;
+}
+
+/**
+ * DESCRIPTION: Função para contar a quantidade de elementos que está disponível na árvore.
+ */
+int RTree::count() const
+{
+    return count(p_root);
+}

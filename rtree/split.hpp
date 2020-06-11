@@ -319,7 +319,7 @@ private:
     virtual std::vector<RNode*> pickSeeds_(std::vector<RNode*>& vec)
     {
         double d = -1;
-        RNode* wrongE1, *wrongE2;
+        RNode *wrongE1, *wrongE2;
 
         // PS1 - Busca a pior combinação de nós
         for(std::size_t i = 0; i < vec.size(); ++i)
