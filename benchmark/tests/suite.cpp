@@ -28,6 +28,14 @@ void printElementsInTree(const RTree& tree)
     std::cout << "Quantidade de elementos na árvore: " << tree.count() << std::endl;
 }
 
+/**
+ * DESCRIPTION: Função auxiliar para facilitar a visualização da altura da árvore
+ */
+void printTreeHeight(const RTree& tree)
+{
+    std::cout << "Altura da árvore: " << tree.height() << std::endl;
+}
+
 int main()
 {
     { // Utilizando o ciclo de vida de objetos em C++
@@ -53,6 +61,7 @@ int main()
         rTree.insert(new Rectangle(62.0, 85.0, 65.0, 75.0));
 
         auto end = std::chrono::high_resolution_clock::now();
+        printTreeHeight(rTree);
         printElementsInTree(rTree);
         printTimeLog(start, end);
     }
@@ -115,6 +124,7 @@ int main()
         rTree.insert(new Rectangle(650.0, 669.0, 390.0, 406.0));
 
         auto end = std::chrono::high_resolution_clock::now();
+        printTreeHeight(rTree);
         printElementsInTree(rTree);
         printTimeLog(start, end);
     }
@@ -196,6 +206,7 @@ int main()
         rTree.insert(new Rectangle(354.0, 363.0, 476.0, 482.0));
 
         auto end = std::chrono::high_resolution_clock::now();
+        printTreeHeight(rTree);
         printElementsInTree(rTree);
         printTimeLog(start, end);
     }
@@ -258,6 +269,7 @@ int main()
         rTree.insert(new Rectangle(650.0, 669.0, 390.0, 406.0));
 
         auto end = std::chrono::high_resolution_clock::now();
+        printTreeHeight(rTree);
         printElementsInTree(rTree);
         printTimeLog(start, end);
     }
@@ -320,6 +332,7 @@ int main()
         rTree.insert(new Rectangle(650.0, 669.0, 390.0, 406.0));
 
         auto end = std::chrono::high_resolution_clock::now();
+        printTreeHeight(rTree);
         printElementsInTree(rTree);
         printTimeLog(start, end);
     }
@@ -401,6 +414,7 @@ int main()
         rTree.insert(new Rectangle(354.0, 363.0, 476.0, 482.0));
 
         auto end = std::chrono::high_resolution_clock::now();
+        printTreeHeight(rTree);
         printElementsInTree(rTree);
         printTimeLog(start, end);
     }
@@ -482,6 +496,7 @@ int main()
         rTree.insert(new Rectangle(354.0, 363.0, 476.0, 482.0));
 
         auto end = std::chrono::high_resolution_clock::now();
+        printTreeHeight(rTree);
         printElementsInTree(rTree);
         printTimeLog(start, end);
     }
