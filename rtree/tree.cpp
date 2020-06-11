@@ -71,7 +71,8 @@ void RNode::addChild(RNode* child)
     child->p_parent = this;
     p_children.push_back(child);
 
-    updateMBR_();
+    updateMBR_(); // evita que o método "mbr" fique recalculando
+                  // como era feito na versão 0.4
 }
 
 std::size_t RNode::m() const
@@ -164,8 +165,13 @@ RNode* RTree::adjustTree(RNode* root, RNode* N, RNode* NN)
     RNode* pp = nullptr;
     
     // AT3. Para cada filho em p, fazer sua atualização
+    // (Essa parte, mais que qualquer outra parte do código, foi muito empírico, eu não conseguia entender
+    // o que o autor queria dizer, até que quando fiz dessa forma, as coisas fizeram mais sentido, no funcionamento
+    // e entendimento do artigo)
+    // O que estou fazendo é atualizar o MBR de cada filho e depois do pai
     for(auto ppt: p->p_children)
         ppt->updateMBR_();
+    p->updateMBR_();
 
     if (NN != nullptr)
     {
@@ -200,7 +206,7 @@ RNode* RNode::insert_(RNode* nn)
 
     // Se está cheio não pode inserir NN, precisa realizar a operação de split
     // Os dois casos chamam o "adjustTree", isto é feito para que os elementos alterados
-    // tenham seu MBR atualizado.
+    // tenham seu MBR atualizado e se necessário a realização do split
     if (L->isFullOfChildren())
     {
         L->addChild(nn);

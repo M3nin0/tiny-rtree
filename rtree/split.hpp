@@ -179,6 +179,8 @@ public:
 
 /**
  * Estratégia de split em tempo linear
+ * 
+ * TODO: Validar
  */
 class LinearSplitStrategy: public GuttmanMethod
 {
@@ -287,7 +289,10 @@ private:
     {
         std::size_t indexOfSelectedNode = -1; // Para auxiliar a remoção do elemento selecionado
         RNode* nodeWithMaxDifference = nullptr;
-        double maxDifference = std::numeric_limits<double>::min();
+        // Colocado já que, em um caso de teste, os ganhos de área eram zero.
+        // Assim, para evitar qualquer lógica extra, que pode causar danos a árvore, este valor muito pequeno
+        // foi adicionado
+        double maxDifference = std::numeric_limits<double>::max() * -1;
 
         for(std::size_t i = 0; i < children.size(); ++i)
         {
@@ -318,12 +323,15 @@ private:
      */
     virtual std::vector<RNode*> pickSeeds_(std::vector<RNode*>& vec)
     {
-        double d = -1;
         RNode *wrongE1, *wrongE2;
+        double maximalD = std::numeric_limits<double>::max() * -1; // Maior valor que pensei (Para evitar qualquer viés)
 
         // PS1 - Busca a pior combinação de nós
         for(std::size_t i = 0; i < vec.size(); ++i)
         {
+            // Aqui na primeira versão tinha um "if", mas para otimizar, seguindo as ideias que vimos com o
+            // professor Celso, retirei a verificação. Para fazer isso eu considerei que todo
+            // elemento a esquerda de i já está sendo considerado no "for" maior. Por isso o "j" começa em i + 1
             auto e1 = vec.at(i);
             for(std::size_t j = i + 1; j < vec.size(); ++j)
             {
@@ -332,12 +340,12 @@ private:
                 double e2Area = DimensionalRectangleAlgebra::RectangleArea(e2->mbr());
 
                 DimensionalRectangle2D* base = DimensionalRectangleAlgebra::DimensionAppend(e1->mbr(), e2->mbr());
-                double dFor = DimensionalRectangleAlgebra::RectangleArea(base) - e1Area - e2Area;
+                double maximalDCandidate = DimensionalRectangleAlgebra::RectangleArea(base) - e1Area - e2Area;
 
                 // PS2 - Escolhendo o pior par
-                if (dFor > d)
+                if (maximalDCandidate > maximalD)
                 {
-                    d = dFor;
+                    maximalD = maximalDCandidate;
                     wrongE1 = e1;
                     wrongE2 = e2;
                 }
