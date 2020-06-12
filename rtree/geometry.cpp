@@ -1,63 +1,84 @@
 #include <vector>
+#include <array>
 #include <algorithm>
+#include <stdexcept>
+
 #include "geometry.hpp"
 
-BaseRectangle::BaseRectangle(double xmin, double xmax, double ymin, double ymax)
+DimensionalRectangle2D::DimensionalRectangle2D(double xmin, double xmax, double ymin, double ymax)
     : p_xmin(xmin), p_xmax(xmax), p_ymin(ymin), p_ymax(ymax)
 {
 }
 
-double BaseRectangle::xmin() const
+double DimensionalRectangle2D::min(std::size_t axis)
 {
-    return p_xmin;
+    if (axis == 0)
+        return p_xmin;
+    else if (axis == 1)
+        return p_ymin;
+    throw std::domain_error("Dimensão inválida");
 }
 
-double BaseRectangle::xmax() const
+double DimensionalRectangle2D::max(std::size_t axis)
 {
-    return p_xmax;
+    if (axis == 0)
+        return p_xmax;
+    else if (axis == 1)
+        return p_ymax;
+    throw std::domain_error("Dimensão inválida!");
 }
 
-double BaseRectangle::ymin() const
-{
-    return p_ymin;
-}
-
-double BaseRectangle::ymax() const
-{
-    return p_ymax;
-}
-
-double RectangleArea(BaseRectangle* rect)
+double DimensionalRectangleAlgebra::RectangleArea(DimensionalRectangle2D* dimSpace)
 {
     // Calculando a área
-    double base = rect->xmax() - rect->xmin();
-    double height = rect->ymax() - rect->ymin();
+    double base = dimSpace->max(0) - dimSpace->min(0); // x
+    double height = dimSpace->max(1) - dimSpace->min(1); // y
 
     return base * height;
 }
 
-BaseRectangle* RectangleAppend(BaseRectangle* rect1, BaseRectangle* rect2)
+DimensionalRectangle2D* DimensionalRectangleAlgebra::DimensionAppend(DimensionalRectangle2D* rect1, 
+                                                                        DimensionalRectangle2D* rect2)
 {
-    std::vector<double> xs({ rect1->xmin(), rect2->xmin(), rect1->xmax(), rect2->xmax() });
-    std::vector<double> ys({ rect1->ymin(), rect2->ymin(), rect1->ymax(), rect2->ymax() });
+    std::array<double, 4> xs({ rect1->min(0), rect2->min(0), rect1->max(0), rect2->max(0) });
+    std::array<double, 4> ys({ rect1->min(1), rect2->min(1), rect1->max(1), rect2->max(1) });
 
+    // Encontrando os novos mínimos e máximos dos retângulos
+    // O que gera novo espaço retangular
     double xmin = *std::min_element(xs.begin(), xs.end());
     double xmax = *std::max_element(xs.begin(), xs.end());
     double ymin = *std::min_element(ys.begin(), ys.end());
     double ymax = *std::max_element(ys.begin(), ys.end());
-    
-    return new BaseRectangle(
+
+    return new DimensionalRectangle2D(
         xmin, xmax, ymin, ymax
     );
 }
 
-double AreaGain(BaseRectangle* space, BaseRectangle* newReact)
+double DimensionalRectangleAlgebra::AreaGain(DimensionalRectangle2D* actualSpace, DimensionalRectangle2D* newReact)
 {
     // Criar novo espaço para entender o quanto cresceu
-    BaseRectangle* newSpace = RectangleAppend(space, newReact);
+    DimensionalRectangle2D* newSpace = DimensionAppend(actualSpace, newReact);
 
-    double actualSpaceArea = RectangleArea(space);
+    double actualSpaceArea = RectangleArea(actualSpace);
     double gainSpaceArea = RectangleArea(newSpace);
 
     return gainSpaceArea - actualSpaceArea;
+}
+
+int DimensionalRectangleAlgebra::Overslaps(DimensionalRectangle2D* rect1, DimensionalRectangle2D* rect2)
+{
+    // Verificando em intervalos em X e Y
+    // bool overlapsInX = (rect2->min(0) >= rect1->min(0) && rect2->min(0) <= rect1->max(0)) ||
+    //                   (rect2->max(0) >= rect1->min(0) && rect2->max(0) <= rect1->max(0));
+    // bool overlapsInY = (rect2->min(1) >= rect1->min(1) && rect2->min(1) <= rect1->max(1)) ||
+    //                   (rect2->max(1) >= rect1->min(1) && rect2->max(1) <= rect1->max(1));
+    // return overlapsInX && overlapsInY;
+    
+    // Mapear os casos por intervalo estava causando problemas na busca.
+    // Então, seguindo as ideias vistas na aula de kd-tree do Gilberto ("Filtrar pelo que não é")
+    bool overlapsInX = (rect1->min(0) > rect2->max(0) || rect2->min(0) > rect1->max(0));
+    bool overlapsInY = (rect1->min(1) > rect2->max(1) || rect2->min(1) > rect1->max(1));
+
+    return !(overlapsInX || overlapsInY);
 }

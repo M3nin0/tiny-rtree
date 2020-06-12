@@ -1,55 +1,87 @@
 #ifndef __GEOMETRY_HEADER__
 #define __GEOMETRY_HEADER__
 
-class BaseRectangle
+#include <array>
+#include <cstddef>
+
+/**
+ * DESCRIPTION: Estrutura para representam o retângulo no espaço bidimensional que está sendo
+ * tratado na RTree implementada
+ */
+struct DimensionalRectangle2D
 {
 public:
-    BaseRectangle(double xmin, double xmax, double ymin, double ymax);
+    DimensionalRectangle2D(double xmin, double xmax, double ymin, double ymax);
 
-    double xmin() const;
-    double xmax() const;
-    double ymin() const;
-    double ymax() const;
+    double min(std::size_t axis);
+    double max(std::size_t axis);
 private:
     double p_xmin, p_xmax, p_ymin, p_ymax;
 };
 
-class DefinedGeometry
+
+class DimensionalRectangleAlgebra
 {
 public:
-    virtual BaseRectangle* envelope() = 0;
-};
 
-class DefinedPoint
-{
-public:
-    DefinedPoint(double x, double y);
-
-    double x();
-    double y();
-
-    BaseRectangle* envelope();
-private:
-    double p_x, p_y;
-};
-
-class DefinedRectangle
-{
-public:
-    DefinedRectangle(double xmin, double xmax, double ymin, double ymax);
+    /**
+     * DESCRIPTION: Método estático para cálculo de área de uma dimensão retangular
+     */
+    static double RectangleArea(DimensionalRectangle2D* rect);
     
-    double xmin();
-    double xmax();
-    double ymin();
-    double ymax();
+    /**
+     * DESCRIPTION: Método para calcular o ganho de área que uma dimensão retangular 
+     * terá ao adicionar um novo retângulo em sua composição
+     */
+    static double AreaGain(DimensionalRectangle2D* actualSpace, DimensionalRectangle2D* newReact);
+    
+    /**
+     * DESCRIPTION: Método para verificar se dois retângulos se sobrepõem.
+     */
+    static int Overslaps(DimensionalRectangle2D* rect1, DimensionalRectangle2D* rect2);
 
-    BaseRectangle* envelope();
-private:
-    double p_xmin, p_xmax, p_ymin, p_ymax;
+    /**
+     * DESCRIPTION: Método para juntar duas dimensões retangulares
+     */
+    static DimensionalRectangle2D* DimensionAppend(DimensionalRectangle2D* dim1, DimensionalRectangle2D* dim2);
 };
 
-double RectangleArea(BaseRectangle* rect);
-double AreaGain(BaseRectangle* space, BaseRectangle* newReact);
-BaseRectangle* RectangleAppend(BaseRectangle* rect1, BaseRectangle* rect2);
+/**
+ * Classe genérica de geometria
+ */
+class Geometry
+{
+public:
+
+    /**
+     * DESCRIPTION: Método criado para a geração de MBR de geometrias 2D
+     * 
+     * OBSERVATION: Método polimórfico criado para a possibilidade de generalização das geometrias
+     * tratadas na árvore
+     */
+    virtual DimensionalRectangle2D*  mbr() = 0; // Indicando que esta estrutura é polimórfica
+};
+
+/**
+ * DESCRIPTION: Representação da geometria de retângulo. Por ser uma especialização da classe Geometry,
+ * pertence ao conjunto de objetos que podem ser utilizados na RTree desenvolvida
+ */
+class Rectangle: public Geometry
+{
+public:
+    Rectangle(double xmin, double xmax, double ymin, double ymax)
+        : p_xmin(xmin), p_xmax(xmax), p_ymin(ymin), p_ymax(ymax)
+    {
+    }
+
+private:
+    double p_xmin, p_xmax, p_ymin, p_ymax;
+
+public:
+    virtual DimensionalRectangle2D* mbr()
+    {
+        return new DimensionalRectangle2D{p_xmin, p_xmax, p_ymin, p_ymax};
+    }
+};
 
 #endif
