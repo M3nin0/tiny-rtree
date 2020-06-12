@@ -2,4 +2,4 @@
 
 cmake .
 make
-./trtree
+# ./trtree
