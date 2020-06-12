@@ -68,8 +68,17 @@ double DimensionalRectangleAlgebra::AreaGain(DimensionalRectangle2D* actualSpace
 
 int DimensionalRectangleAlgebra::Overslaps(DimensionalRectangle2D* rect1, DimensionalRectangle2D* rect2)
 {
-    if((rect2->min(0) > rect1->min(0) && rect2->min(0) < rect1->max(0)) || (rect2->max(0) > rect1->min(0) && rect2->max(0) < rect1->max(0)) || (rect2->min(1) > rect1->min(1) && rect2->min(1) < rect1->max(1)) || (rect2->max(1) > rect1->min(1) && rect2->max(1) < rect1->max(1)))
-        return 0;
-    else
-        return 1;
+    // Verificando em intervalos em X e Y
+    // bool overlapsInX = (rect2->min(0) >= rect1->min(0) && rect2->min(0) <= rect1->max(0)) ||
+    //                   (rect2->max(0) >= rect1->min(0) && rect2->max(0) <= rect1->max(0));
+    // bool overlapsInY = (rect2->min(1) >= rect1->min(1) && rect2->min(1) <= rect1->max(1)) ||
+    //                   (rect2->max(1) >= rect1->min(1) && rect2->max(1) <= rect1->max(1));
+    // return overlapsInX && overlapsInY;
+    
+    // Mapear os casos por intervalo estava causando problemas na busca.
+    // Então, seguindo as ideias vistas na aula de kd-tree do Gilberto ("Filtrar pelo que não é")
+    bool overlapsInX = (rect1->min(0) > rect2->max(0) || rect2->min(0) > rect1->max(0));
+    bool overlapsInY = (rect1->min(1) > rect2->max(1) || rect2->min(1) > rect1->max(1));
+
+    return !(overlapsInX || overlapsInY);
 }
