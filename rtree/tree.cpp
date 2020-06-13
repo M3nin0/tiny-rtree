@@ -314,21 +314,13 @@ void RNode::print_(RNode* root)
             std::cout << root->children().at(i)->mbr()->max(1) << std::endl;
         }
     }
-    // else // ToDo: Adicionar recursão
-    // {
-    //     // (Buscando nos intermediários)
-    //     for(auto node: root->children()) // node -> sem uso
-    //     {
-    //         // vou passar por todos os elementos do vector e imprimir o mbr de cada um
-    //         for(std::size_t i = 0; i<root->children().size(); ++i) 
-    //         {
-    //             std::cout << root->children().at(i)->mbr()->min(0) << "\t";
-    //             std::cout << root->children().at(i)->mbr()->max(0) << "\t";
-    //             std::cout << root->children().at(i)->mbr()->min(1) << "\t";
-    //             std::cout << root->children().at(i)->mbr()->max(1) << std::endl;
-    //         }
-    //     }  
-    // }
+    else
+    {
+        for(auto node: root->children())
+        {
+            print_(node);
+        }
+    }
 }
 
 /**
