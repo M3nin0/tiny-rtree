@@ -8,4 +8,4 @@ clear
 
 echo "Executando os testes"
 sleep 5
-./trtree_benchmark
+./trtree_benchmark > log.log
