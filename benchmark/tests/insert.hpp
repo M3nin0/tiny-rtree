@@ -7,7 +7,10 @@
 
 #include "helper.hpp"
 
-void doInsertTest()
+/**
+ * Função de teste de inserção básica, para testes iniciais na r-tree implementada
+ */
+void doBaseInsertTest()
 {
     std::cout << "Teste de inserção" << std::endl;
 

@@ -8,7 +8,10 @@
 
 #include "helper.hpp"
 
-void doSearchTest()
+/**
+ * Função de teste de busca básica, para testes iniciais na r-tree implementada
+ */
+void doBaseSearchTest()
 {
     std::cout << "Teste de busca" << std::endl;
 
