@@ -17,5 +17,3 @@ def bbox(coords):
                      float(coords[2]),
                      float(coords[1]),
                      float(coords[3])))
-
-
