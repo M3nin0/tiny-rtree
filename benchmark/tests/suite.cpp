@@ -24,7 +24,11 @@ int main()
 
     std::cout << "\n\n=======\n\n" << std::endl;
 
-    doSearchTestWithRealData();
+    doSearchTestWithRealDataOne();
+
+    std::cout << "\n\n=======\n\n" << std::endl;
+
+    doSearchTestWithRealDataTwo();
 
     return 0;
 }
