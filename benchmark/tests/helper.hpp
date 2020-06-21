@@ -5627,4 +5627,4 @@ void insertBrazilianCitiesData(RTree& rTree)
 }
 
 
-#endif // __TIMER__
+#endif // __HELPER__
