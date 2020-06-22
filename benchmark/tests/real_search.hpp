@@ -18,8 +18,8 @@ void doSearchTestWithRealDataOne()
 {
     // Definindo os valores de m e M que serão utilizados em cada instância de teste
     // Os elementos são utilizados em pares
-    std::array<std::size_t, 4> mValues{2, 4, 20, 40};
-    std::array<std::size_t, 4> MValues{4, 10, 50, 100};
+    std::array<std::size_t, 7> mValues{2, 4, 6, 12, 20, 28, 40};
+    std::array<std::size_t, 7> MValues{4, 10, 15, 30, 50, 70, 100};
 
     std::cout << "Teste de busca com dados reais (Municípios do Brasil)| Retângulo menor" << std::endl;
     
