@@ -6,9 +6,47 @@
 #include "../../rtree/geometry.hpp"
 
 #include <chrono>
-// #include <fstream>
-#include <sstream>
+#include <fstream>
 #include <iostream>
+
+void clearCSV()
+{
+    std::ofstream csvFile;
+
+    csvFile.open("output.csv");
+    csvFile << "test_name,time_in_ms,elements_in_tree,tree_height,m,M,class\n";
+}
+
+/**
+ * DESCRIPTION: Função para salvar as informações em um arquivo de log
+ */
+void logInCSV(std::string testname, std::chrono::time_point<std::chrono::high_resolution_clock> start,
+              std::chrono::time_point<std::chrono::high_resolution_clock> end, const RTree& tree,
+              std::size_t m, std::size_t M, std::size_t cls)
+{
+    // Calculando o tempo em MS
+    auto initialTime = std::chrono::time_point_cast<std::chrono::microseconds>(start).time_since_epoch().count();
+    auto finalTime = std::chrono::time_point_cast<std::chrono::microseconds>(end).time_since_epoch().count();
+
+    std::ofstream csvFile;
+    csvFile.open("output.csv", std::ios_base::app);
+
+    // Salvando as informações
+    csvFile << testname;
+    csvFile << ",";
+    csvFile << ((finalTime - initialTime) * 0.001);
+    csvFile << ",";
+    csvFile << tree.count();
+    csvFile << ",";
+    csvFile << tree.height();
+    csvFile << ",";
+    csvFile << m;
+    csvFile << ",";
+    csvFile << M;
+    csvFile << ",";
+    csvFile << cls;
+    csvFile << "\n";
+}
 
 /**
  * DESCRIPTION: Função auxiliar para facilitar a visualização da quantidade de elementos na árvore

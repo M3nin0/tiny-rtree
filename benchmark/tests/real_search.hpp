@@ -1,6 +1,6 @@
 /**
  * Arquivo com os testes de busca em um conjunto de dados real
- */
+*/
 
 #include "../../rtree/tree.hpp"
 #include "../../rtree/split.hpp"
@@ -40,6 +40,9 @@ void doSearchTestWithRealDataOne()
         printElementsInTree(rTree);
         printTimeLog(start, end);
         printRecoveredElements(els, 3);
+
+        // log
+        logInCSV("retangulo_menor_search_" + std::to_string(i), start, end, rTree, mValues[i], MValues[i], i);
     }
 }
 
@@ -48,8 +51,8 @@ void doSearchTestWithRealDataTwo()
 {
     // Definindo os valores de m e M que serão utilizados em cada instância de teste
     // Os elementos são utilizados em pares
-    std::array<std::size_t, 4> mValues{2, 4, 20, 40};
-    std::array<std::size_t, 4> MValues{4, 10, 50, 100};
+    std::array<std::size_t, 7> mValues{2, 4, 6, 12, 20, 28, 40};
+    std::array<std::size_t, 7> MValues{4, 10, 15, 30, 50, 70, 100};
 
     std::cout << "Teste de busca com dados reais (Municípios do Brasil) | Retângulo maior" << std::endl;
     
@@ -70,5 +73,7 @@ void doSearchTestWithRealDataTwo()
         printElementsInTree(rTree);
         printTimeLog(start, end);
         printRecoveredElements(els, 1140);
+
+        logInCSV("retangulo_maior_search_" + std::to_string(i), start, end, rTree, mValues[i], MValues[i], i);
     }
 }
