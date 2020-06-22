@@ -31,7 +31,7 @@ void doSearchTestWithRealDataOne()
         insertBrazilianCitiesData(rTree); // feito para remover qualquer tipo de E/S
 
         auto start = std::chrono::high_resolution_clock::now();
-        std::vector<RNode*> els = rTree.search(new Rectangle(-50.5919, -50.5250, -19.8286, -19.7809));
+        std::vector<RNode*> els = rTree.search(new Rectangle(-55.695, -53.870, -7.174, -5.750));
         auto end = std::chrono::high_resolution_clock::now();
 
         assert(els.size() == 3);
@@ -61,14 +61,14 @@ void doSearchTestWithRealDataTwo()
         insertBrazilianCitiesData(rTree); // feito para remover qualquer tipo de E/S
 
         auto start = std::chrono::high_resolution_clock::now();
-        std::vector<RNode*> els = rTree.search(new Rectangle(-41.18, -33.72, -11.22, -2.36));
+        std::vector<RNode*> els = rTree.search(new Rectangle(-40.93, -33.82, -13.21, -2.12));
         auto end = std::chrono::high_resolution_clock::now();
 
-        assert(els.size() == 1025);
+        assert(els.size() == 1140);
 
         printTreeHeight(rTree);
         printElementsInTree(rTree);
         printTimeLog(start, end);
-        printRecoveredElements(els, 1025);
+        printRecoveredElements(els, 1140);
     }
 }
