@@ -5,6 +5,7 @@
 #include "real_search.hpp"
 #include "real_insert.hpp"
 #include "synthetic_insert.hpp"
+#include "synthetic_search.hpp"
 
 #include "helper.hpp"
 
@@ -26,6 +27,9 @@ int main()
     doSearchTestWithRealDataOne();
     std::cout << "\n\n=======\n\n" << std::endl;
     doSearchTestWithRealDataTwo();
+
+    std::cout << "\n\n=======\n\n" << std::endl;
+    doSearchTestWithSyntheticDataOne();
 
     return 0;
 }

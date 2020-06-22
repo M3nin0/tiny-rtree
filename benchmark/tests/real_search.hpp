@@ -25,21 +25,21 @@ void doSearchTestWithRealDataOne()
     
     for(std::size_t i = 0; i < mValues.size(); ++i)
     { 
-        std::cout << "C1 - Construção da árvore com 5572 elementos - RTree(" << mValues[i] << ", " << MValues[i] << ")" << std::endl;
+        std::cout << "RS_1 - Busca na árvore com 5572 elementos - RTree(" << mValues[i] << ", " << MValues[i] << ")" << std::endl;
         RTree rTree(mValues[i], MValues[i], new QuadraticSplitStrategy());
 
         insertBrazilianCitiesData(rTree); // feito para remover qualquer tipo de E/S
 
         auto start = std::chrono::high_resolution_clock::now();
-        std::vector<RNode*> els = rTree.search(new Rectangle(-55.695, -53.870, -7.174, -5.750));
+        std::vector<RNode*> els = rTree.search(new Rectangle(-59.172, -51.616, -11.263, -4.852));
         auto end = std::chrono::high_resolution_clock::now();
 
-        assert(els.size() == 3);
+        assert(els.size() == 51);
 
         printTreeHeight(rTree);
         printElementsInTree(rTree);
         printTimeLog(start, end);
-        printRecoveredElements(els, 3);
+        printRecoveredElements(els, 51);
 
         // log
         logInCSV("retangulo_menor_search_" + std::to_string(i), start, end, rTree, mValues[i], MValues[i], i);
@@ -58,7 +58,7 @@ void doSearchTestWithRealDataTwo()
     
     for(std::size_t i = 0; i < mValues.size(); ++i)
     { 
-        std::cout << "C1 - Construção da árvore com 5572 elementos - RTree(" << mValues[i] << ", " << MValues[i] << ")" << std::endl;
+        std::cout << "RS_2 - Busca na árvore com 5572 elementos - RTree(" << mValues[i] << ", " << MValues[i] << ")" << std::endl;
         RTree rTree(mValues[i], MValues[i], new QuadraticSplitStrategy());
 
         insertBrazilianCitiesData(rTree); // feito para remover qualquer tipo de E/S

@@ -1,6 +1,6 @@
 /**
  * Arquivo com os testes de inserção com um conjunto de dados real
- */
+*/
 
 
 #include "../../rtree/tree.hpp"
@@ -27,7 +27,7 @@ void doInsertTestWithRealData()
     
     for(std::size_t i = 0; i < mValues.size(); ++i)
     { 
-        std::cout << "C1 - Construção da árvore com 5572 elementos - RTree(" << mValues[i] << "," << MValues[i] << ")" << std::endl;
+        std::cout << "RI_1 - Construção da árvore com 5572 elementos - RTree(" << mValues[i] << "," << MValues[i] << ")" << std::endl;
 
         auto start = std::chrono::high_resolution_clock::now();
         RTree rTree(mValues[i], MValues[i], new QuadraticSplitStrategy());
