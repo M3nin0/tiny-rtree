@@ -115,9 +115,9 @@ RNode* RTree::chooseLeaf(RNode* N, DimensionalRectangle2D* ngeom)
     if (N->isLeaf())
         return N;
 
-    // Precisa ser nulo, na versão original era selectedNode = N (O que gerou problemas e 'ifs' extras)
+    // Precisa ser nulo, na versão 0.1 era selectedNode = N (O que gerou problemas e 'ifs' extras)
     RNode* selectedNode = nullptr;
-    // pega um elemento fora do domínio para começar
+    // pega um elemento fora do domínio para começar (Isso aqui é tipo a representação do infinito no livro do Ziviane)
     double maxGainArea = std::numeric_limits<double>::max(); 
 
     // CL3 (Buscando o nó que possuí o menor crescimento do MBR)
@@ -168,12 +168,12 @@ RNode* RTree::adjustTree(RNode* root, RNode* N, RNode* NN)
     
     // AT3. Para cada filho em p, fazer sua atualização
     // (Essa parte, mais que qualquer outra parte do código, foi muito empírico, eu não conseguia entender
-    // o que o autor queria dizer, até que quando fiz dessa forma, as coisas fizeram mais sentido, no funcionamento
+    // o que o guttman queria dizer, até que quando fiz dessa forma, as coisas fizeram mais sentido, no funcionamento
     // e entendimento do artigo)
     // O que estou fazendo é atualizar o MBR de cada filho e depois do pai
     for(auto ppt: p->p_children)
         ppt->updateMBR_();
-    p->updateMBR_();
+    p->updateMBR_(); // nos testes não fez diferença, mas não consigo mapear todos os casos
 
     if (NN != nullptr)
     {

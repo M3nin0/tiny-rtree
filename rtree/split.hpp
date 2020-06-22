@@ -94,8 +94,6 @@ public:
         std::size_t m = L->m();
         std::size_t M = L->M();
 
-        // Por agora estou copiando o código todo do quadraticSplit
-        // Mas o código pode ser generalizado em um segundo momento
         std::vector<RNode*> children = L->children();
         L->children().clear();
 
@@ -106,7 +104,7 @@ public:
         // enquanto o lado do groupTwo sempre dava problemas na estrutura
         RNode* groupTwo = new RNode(m, M, L->isLeaf(), L->strategy());
         
-        // Encontrando o pior par para separar eles    
+        // Encontrando o pior par para separar eles
         std::vector<RNode*> wrongSeeds = pickSeeds(children);
 
         groupOne->addChild(wrongSeeds.at(0));
@@ -162,7 +160,7 @@ public:
                         selectedGroup = groupOne;
                 } else {
                     // 2° Adiciona em qualquer grupo (Random)
-                    std::size_t groupIndex = rand() % 2 + 1;
+                    std::size_t groupIndex = (rand() % 2) + 1;
 
                     if (groupIndex == 1)
                         selectedGroup = groupOne;
@@ -254,7 +252,7 @@ private:
     /**
      * DESCRIPTION: Este método implementa as regras de Split apresentadas no método
      * de tempo linear no artigo de Guttman (1984). Neste, o conjunto de regras
-     * {LPS1, LPS2, LPS3} são utilizados
+     * {LPS1, LPS2, LPS3} é utilizado
      */
     virtual std::vector<RNode*> pickSeeds_(std::vector<RNode*>& vec)
     {
@@ -291,7 +289,7 @@ private:
         RNode* nodeWithMaxDifference = nullptr;
         // Colocado já que, em um caso de teste, os ganhos de área eram zero.
         // Assim, para evitar qualquer lógica extra, que pode causar danos a árvore, este valor muito pequeno
-        // foi adicionado
+        // foi adicionado (Tipo o que aconteceu no adjustTree da versão 0.1)
         double maxDifference = std::numeric_limits<double>::max() * -1;
 
         for(std::size_t i = 0; i < children.size(); ++i)

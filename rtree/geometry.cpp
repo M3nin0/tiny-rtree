@@ -45,6 +45,7 @@ DimensionalRectangle2D* DimensionalRectangleAlgebra::DimensionAppend(Dimensional
 
     // Encontrando os novos mínimos e máximos dos retângulos
     // O que gera novo espaço retangular
+    // Isso remove aquele monte de 'if' da versão 0.1
     double xmin = *std::min_element(xs.begin(), xs.end());
     double xmax = *std::max_element(xs.begin(), xs.end());
     double ymin = *std::min_element(ys.begin(), ys.end());
@@ -77,6 +78,8 @@ int DimensionalRectangleAlgebra::Overslaps(DimensionalRectangle2D* rect1, Dimens
     
     // Mapear os casos por intervalo estava causando problemas na busca.
     // Então, seguindo as ideias vistas na aula de kd-tree do Gilberto ("Filtrar pelo que não é")
+    // Na versão 0.5 o código que mapeava o que era estava sendo usado, mas nos testes com mais dados
+    // problemas começaram a aparecer, por isso a mudança foi realizada.
     bool overlapsInX = (rect1->min(0) > rect2->max(0) || rect2->min(0) > rect1->max(0));
     bool overlapsInY = (rect1->min(1) > rect2->max(1) || rect2->min(1) > rect1->max(1));
 
