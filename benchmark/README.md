@@ -12,3 +12,7 @@ chmod +x run.sh
 ```
 
 Ao utilizar este comando, todo o projeto será compilado e as baterias de testes serão executadas.
+
+## Utilitários
+
+Caso seja necessário, as ferramentas utilizadas utilizadas para a preparação e visualização dos dados dos testes podem ser visualizadas no diretório [geometry](geometry)

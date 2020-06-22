@@ -1,5 +1,5 @@
 """
-Arquivo para a geração das geometrias e suas figuras
+Arquivo para a geração das geometrias utilizadas nos testes base da estrutura de dados.
 """
 
 from utils import *
