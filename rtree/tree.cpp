@@ -264,15 +264,15 @@ int RTree::count(RNode *root) const
 /**
  * DESCRIPTION: Método para buscar os retângulos que sobrepõem o retângulo em questão
  */
-void RTree::search_(RNode* root, DimensionalRectangle2D* geom, std::vector<RNode*>& overslaps_) const
+void RTree::search_(RNode* root, DimensionalRectangle2D* geom, std::vector<RNode*>& overlaps_) const
 {
     // S2. Busca nos nós folha (Buscando nos conteúdos)
     if(root->isLeaf())
     {
         for(std::size_t i = 0; i < root->children().size(); ++i) // vou passar por todos os elementos do vector e imprimir o mbr de cada um
         {
-            if(DimensionalRectangleAlgebra::Overslaps(root->children().at(i)->mbr(), geom)) // vendo se os retângulos das entradas sobrepõem o que eu to buscando
-                overslaps_.push_back(root->children().at(i)); // se sim, adiciona num vector pra armazenar
+            if(DimensionalRectangleAlgebra::Overlaps(root->children().at(i)->mbr(), geom)) // vendo se os retângulos das entradas sobrepõem o que eu to buscando
+                overlaps_.push_back(root->children().at(i)); // se sim, adiciona num vector pra armazenar
         }
     }
     // S1. Busca nas subárvores (Buscando nos intermediários)
@@ -282,13 +282,13 @@ void RTree::search_(RNode* root, DimensionalRectangle2D* geom, std::vector<RNode
         for(auto node: root->children())
         {
             // Para todas as entradas que sobrepoe S, chama o search
-            if (DimensionalRectangleAlgebra::Overslaps(node->mbr(), geom))
-                search_(node, geom, overslaps_);
+            if (DimensionalRectangleAlgebra::Overlaps(node->mbr(), geom))
+                search_(node, geom, overlaps_);
         }
     }
     // Da forma abaixo, acredito que todos os elementos estavam sendo verificandos
     // for(std::size_t i=0; i<root->children().size(); ++i)
-    //     return search_(root->children().at(i), geom, overslaps_); 
+    //     return search_(root->children().at(i), geom, overlaps_); 
 }
 
 std::vector<RNode*> RTree::search(Geometry* geom) const
