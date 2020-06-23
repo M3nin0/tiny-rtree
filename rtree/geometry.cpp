@@ -67,7 +67,7 @@ double DimensionalRectangleAlgebra::AreaGain(DimensionalRectangle2D* actualSpace
     return gainSpaceArea - actualSpaceArea;
 }
 
-int DimensionalRectangleAlgebra::Overslaps(DimensionalRectangle2D* rect1, DimensionalRectangle2D* rect2)
+int DimensionalRectangleAlgebra::Overlaps(DimensionalRectangle2D* rect1, DimensionalRectangle2D* rect2)
 {
     // Verificando em intervalos em X e Y
     // bool overlapsInX = (rect2->min(0) >= rect1->min(0) && rect2->min(0) <= rect1->max(0)) ||
