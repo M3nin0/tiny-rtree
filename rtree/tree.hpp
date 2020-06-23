@@ -85,7 +85,7 @@ public:
 
 private:
     int count(RNode* root) const;
-    void search_(RNode* root, DimensionalRectangle2D* geom, std::vector<RNode*>& overslaps_) const;
+    void search_(RNode* root, DimensionalRectangle2D* geom, std::vector<RNode*>& overlaps_) const;
 
 private:
     RNode *p_root;
