@@ -38,7 +38,7 @@ public:
     /**
      * DESCRIPTION: Método para verificar se dois retângulos se sobrepõem.
      */
-    static int Overslaps(DimensionalRectangle2D* rect1, DimensionalRectangle2D* rect2);
+    static int Overlaps(DimensionalRectangle2D* rect1, DimensionalRectangle2D* rect2);
 
     /**
      * DESCRIPTION: Método para juntar duas dimensões retangulares
