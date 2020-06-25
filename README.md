@@ -28,7 +28,7 @@ Abaixo, uma descrição de cada um dos diretórios do projeto
 
 ## Build
 
-Como forma de tornar o código implementado consumível, foi proposto pelo professor a disponibilização do código em formato de biblioteca. Para este trabalho este processo foi feito através do uso do [CCmakeList](CmakeLists).
+Como forma de tornar o código implementado consumível, foi proposto pelo professor a disponibilização do código em formato de biblioteca. Para este trabalho este processo foi feito através do uso do [CMakeLists.txt](CMakeLists.txt).
 
 Para realizar o *build* do projeto em formato de biblioteca, faça a execução do script [compile.sh](compile.sh).
 
