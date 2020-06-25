@@ -9,4 +9,4 @@ clear
 echo "Executando os testes"
 sleep 5
 ./trtree_benchmark > log.log
-echo "Saída salva no log.log"
+echo "Saída salva no arquivo log.log"
